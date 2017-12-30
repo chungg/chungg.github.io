@@ -1,0 +1,35 @@
+<aside class="logo">
+
+	{% if page.url == '/index.html' or page.url == '/' %}
+		{% assign link = '/about' %}
+		{% assign prompt = 'About the Author' %}
+	{% else %}
+		{% assign link = '/' %}
+		{% assign prompt = 'Back to Home' %}
+	{% endif %}
+
+	<a href="{{ link | prepend: site.baseurl }}">
+		<img src="../images/profile.jpg" class="gravatar">
+	</a>
+	<span class="logo-prompt">{{ prompt }}</span>
+</aside>
+<div style="text-align: center; max-width: 500px; margin: 0 auto; font-size: 0.8rem;">
+	<span class="block">
+        	{% if site.linkedin_username %}
+		<a href="https://linkedin.com/in/{{ site.linkedin_username }}">
+                	<i class="fa fa-linkedin"></i> LinkedIn
+                </a>&nbsp;
+                {% endif %}
+                {% if site.github_username %}
+	        <a href="https://github.com/{{ site.github_username }}">
+	                <i class="fa fa-github"></i> GitHub
+		</a>&nbsp;
+                {% endif %}			
+	        {% if site.twitter_username %}
+        	<a href="https://twitter.com/{{ site.twitter_username }}">
+       	        	<i class="fa fa-twitter"></i> Twitter
+                </a>
+	      	{% endif %}
+	</span>
+</div>
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
