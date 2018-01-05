@@ -13,11 +13,10 @@ i'm focused on data and cloud and currently contribute to
 [Gnocchi](http://gnocchi.xyz) for Huawei Technologies Canada, previously at
 Red Hat, eNovance, and IBM.
 
-off the clock, i can be found employing major league shift tactics at children
-rec league baseball games, dancing randomly, or teaching my mom that the button
-doesn't work because she's clicking the button in a screenshot and not a real
-button.
+off the clock, i can be found building LEGO:registered:, dancing randomly, or
+teaching my mom that the button doesn't work because she's clicking the button
+in a screenshot and not a real button.
 
-feel free to follow me above
+feel free to follow me above.
 
 reach me at gord [ at ] live dot ca
