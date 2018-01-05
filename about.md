@@ -18,4 +18,6 @@ rec league baseball games, dancing randomly, or teaching my mom that the button
 doesn't work because she's clicking the button in a screenshot and not a real
 button.
 
-feel free to follow me above or reach out at gord [ at ] live dot ca
+feel free to follow me above
+
+reach me at gord [ at ] live dot ca

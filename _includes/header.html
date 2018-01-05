@@ -1,4 +1,4 @@
-<aside class="logo">
+<aside class="logo" style="margin: 0 auto 15px">
 
 	{% if page.url == '/index.html' or page.url == '/' %}
 		{% assign link = '/about' %}
@@ -13,23 +13,33 @@
 	</a>
 	<span class="logo-prompt">{{ prompt }}</span>
 </aside>
-<div style="text-align: center; max-width: 500px; margin: 0 auto; font-size: 0.8rem;">
+<aside style="text-align: center; max-width: 500px; margin: 0 auto 35px; font-size: 0.8rem;">
 	<span class="block">
         	{% if site.linkedin_username %}
 		<a href="https://linkedin.com/in/{{ site.linkedin_username }}">
-                	<i class="fa fa-linkedin"></i> LinkedIn
+                	<i class="fa fa-linkedin"></i> linkedin
                 </a>&nbsp;
                 {% endif %}
                 {% if site.github_username %}
 	        <a href="https://github.com/{{ site.github_username }}">
-	                <i class="fa fa-github"></i> GitHub
+	                <i class="fa fa-github"></i> github
 		</a>&nbsp;
                 {% endif %}			
 	        {% if site.twitter_username %}
         	<a href="https://twitter.com/{{ site.twitter_username }}">
-       	        	<i class="fa fa-twitter"></i> Twitter
-                </a>
+       	        	<i class="fa fa-twitter"></i> twitter
+                </a>&nbsp;
 	      	{% endif %}
+                {% if site.slideshare_username %}
+                <a href="https://slideshare.net/{{ site.slideshare_username }}">
+                        <i class="fa fa-slideshare"></i> slideshare
+                </a>&nbsp;
+                {% endif %}
+                {% if site.medium_username %}
+                <a href="https://medium.com/@{{ site.medium_username }}">
+                        <i class="fa fa-medium"></i> medium
+                </a>
+                {% endif %}
 	</span>
-</div>
+</aside>
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
