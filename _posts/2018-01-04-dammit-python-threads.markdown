@@ -165,7 +165,7 @@ timeit executor(read_work_write_redis, [(client_remote, f) for f in files], 6)
 
 so when should you use threads? i have no idea. for reference, the fake
 workload i am creating in this scenario is minimal so it's definitely
-I/O-bound. regardless if local or remote:
+I/O-bound regardless if storage is local or remote:
 {% highlight python %}
 timeit fake_work()
 100000 loops, best of 3: 6.75 µs per loop
