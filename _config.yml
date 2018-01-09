@@ -35,6 +35,7 @@ exclude:            [ "LICENSE", "README.md", "CNAME", "vendor", "Gemfile" ]
 plugins:
   - jekyll-sitemap
   - jekyll-remote-theme
+  - jekyll-seo-tag
 remote_theme:       chungg/the-plain
 
 
