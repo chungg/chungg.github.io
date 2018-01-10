@@ -4,10 +4,10 @@ title:  "numpy in the sky, i can go twice as high"
 date:   2018-01-10 10:30:00 -0500
 categories: numpy pandas scipy groupby statistics performance
 ---
-in addition to storing time-based data in efficiently, one of the main
-functions a time-series database provides is the ability to query over temporal
-data and compute statistics. in both cases, this involves summarising vast
-amounts of data either for storage or to provide a new view.
+in addition to storing time-based data efficiently, one of the main functions
+a time-series database provides is the ability to query over temporal data and
+compute statistics. in both cases, this involves summarising vast amounts of
+data either for storage or to provide a new view.
 
 working on [Gnocchi](https://gnocchi.xyz) -- an open-source, time-series
 database that leverages cloud-based storage -- the ability to group data and
