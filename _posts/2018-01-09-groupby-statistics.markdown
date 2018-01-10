@@ -302,7 +302,7 @@ without going too much into implementation details of Gnocchi, the Pandas
 solution takes multiple AggregatedTimeSerie (a Pandas series wrapped with
 supporting functions) and builds a Pandas dataframe to do aggregation across
 the time-series collection. for the NumPy solution, we create similar
-AggregatedTimeSerie objects (aN umPy series wrapped with supporting functions).
+AggregatedTimeSerie objects (a NumPy series wrapped with supporting functions).
 the datasets are created as follows:
 
 {% highlight python %}
