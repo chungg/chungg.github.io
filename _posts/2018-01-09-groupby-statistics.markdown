@@ -12,7 +12,7 @@ amounts of data either for storage or to provide a new view.
 working on [Gnocchi](https://gnocchi.xyz) -- an open-source, time-series
 database that leverages cloud-based storage -- the ability to group data and
 provide new statistical views on the grouped data represents a critical path
-in addition to the ability to read and write said data.
+in addition to the ability to read and write data.
 
 at its conception, Gnocchi original leveraged
 [Pandas](https://pandas.pydata.org/) to supply the logic behind grouping and
@@ -71,10 +71,11 @@ day_delta = numpy.timedelta64('86400', 's')
 
 as a note, `carbonara` handles the time-series structure and logic in Gnocchi.
 i'm using pandas==0.22.0, scipy==1.0.0, numpy==1.13.3, with [Gnocchi4.1](
-https://github.com/gnocchixyz/gnocchi/blob/stable/4.1/gnocchi/carbonara.py)
+https://github.com/gnocchixyz/gnocchi/blob/stable/4.1/gnocchi/carbonara.py#L81)
 to test statistics with SciPy and [master(2018.01.10)](
-https://github.com/gnocchixyz/gnocchi/blob/master/gnocchi/carbonara.py) to test
-NumPy. the implementation code can be found in GitHub for exact details.
+https://github.com/gnocchixyz/gnocchi/blob/7eaaad039ca38e479aecd9fb9d507230253e80c6/gnocchi/carbonara.py#L103)
+to test NumPy. the implementation code can be found in GitHub for exact
+details.
 
 ### initialisation
 
@@ -297,11 +298,12 @@ validate the Pandas solution (which may not be the best Pandas implementation)
 and master(2018.01.10) for NumPy (which also may not be the best NumPy
 implementation).
 
-without going to much into implementation details of Gnocchi, the Pandas
-takes multiple AggregatedTimeSerie (Pandas series wrapped with supporting
-functions) and builds a Pandas dataframe to do work. for NumPy solution,
-we create similar AggregatedTimeSerie (NumPy series wrapped with supporting
-functions). the datasets are created as follows:
+without going too much into implementation details of Gnocchi, the Pandas
+solution takes multiple AggregatedTimeSerie (a Pandas series wrapped with
+supporting functions) and builds a Pandas dataframe to do aggregation across
+the time-series collection. for the NumPy solution, we create similar
+AggregatedTimeSerie objects (aN umPy series wrapped with supporting functions).
+the datasets are created as follows:
 
 {% highlight python %}
 # gnocchi4.0 code
@@ -320,8 +322,8 @@ max_series = carbonara.AggregatedTimeSerie(numpy.timedelta64('60', 's'),
                                            "mean", np_min_group.max())
 {% endhighlight %}
 
-using this series, we'll aggregating across 3 series, filling in missing values
-with 0 (although there are no missing values in this case):
+using this series, we'll aggregate across 3 identical series, filling in
+missing values with 0 (although there are no missing values in this case):
 
 {% highlight python %}
 # gnocchi4.0 code
@@ -375,7 +377,7 @@ https://github.com/gnocchixyz/gnocchi/issues))
 
 ## memory
 
-personally, one reason for swapping out Pandas was to lower the memory
+personally, another reason for swapping out Pandas was to lower the memory
 requirements of each service so Gnocchi could run anywhere easily and reserve
 its memory for real work rather than to run Gnocchi. Pandas requires a
 non-trivial (for Python) amount of memory when loaded:
