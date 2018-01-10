@@ -57,13 +57,10 @@ values = numpy.random.rand(5760)
 
 def round_timestamp(ts, freq):
     # function to group datapoints to specific window range
+    # this is handled internally by carbonara.GroupedTimeSeries for numpy route
     return pandas.Timestamp((pandas.Timestamp(ts).value // freq) * freq)
 
-UNIX_UNIVERSAL_START64 = numpy.datetime64("1970", 'ns')
-def np_round_timestamp(ts, freq):
-    # same as above, except for numpy solution
-    return (UNIX_UNIVERSAL_START64 +
-            numpy.floor((ts - UNIX_UNIVERSAL_START64) / freq) * freq)
+# set of window sizes to group by
 min_delta = numpy.timedelta64('60', 's')
 hr_delta = numpy.timedelta64('3600', 's')
 day_delta = numpy.timedelta64('86400', 's')
@@ -105,7 +102,7 @@ creates 24 groups of 240 points; and by day, which creates 2 groups of 2880
 points.
 
 {% highlight python %}
-# minute granularity, 1440 groups of 4points
+# minute granularity, 1440 groups of 4 points
 timeit pd_min_group = series.groupby(functools.partial(round_timestamp, \
                                                        freq=60*10e8))
 10 loops, best of 3: 33.9 ms per loop
@@ -142,8 +139,8 @@ in mind, the above benchmark should not be considered as a 1:1 comparison.
 
 ### aggregation
 
-now let's compare how each solution performs when computing a statistical
-value for the groups.
+now let's compare how each solution performs when computing statistical values
+for the groups.
 
 #### mean
 
@@ -293,10 +290,11 @@ timeit np_day_group.count()
 
 in this scenario, we'll test how well each solution can aggregate across
 multiple independent time-series. we'll use [Gnocchi4.0 code](
-https://github.com/gnocchixyz/gnocchi/blob/stable/4.0/gnocchi/carbonara.py) to
-validate the Pandas solution (which may not be the best Pandas implementation)
-and master(2018.01.10) for NumPy (which also may not be the best NumPy
-implementation).
+https://github.com/gnocchixyz/gnocchi/blob/4952f07cc07ddb8c26b6fd934d65e5297cc793c0/gnocchi/carbonara.py#L836)
+to validate the Pandas solution (which may not be the best Pandas
+implementation) and [master(2018.01.10)](
+https://github.com/gnocchixyz/gnocchi/blob/7eaaad039ca38e479aecd9fb9d507230253e80c6/gnocchi/rest/aggregates/processor.py#L128)
+for NumPy (which also may not be the best NumPy implementation).
 
 without going too much into implementation details of Gnocchi, the Pandas
 solution takes multiple AggregatedTimeSerie (a Pandas series wrapped with
