@@ -71,7 +71,7 @@ day_delta = numpy.timedelta64('86400', 's')
 
 as a note, `carbonara` handles the time-series structure and logic in Gnocchi.
 i'm using pandas==0.22.0, scipy==1.0.0, numpy==1.13.3, with [Gnocchi4.1](
-https://github.com/gnocchixyz/gnocchi/blob/stable/4.1/gnocchi/carbonara.py#L81)
+https://github.com/gnocchixyz/gnocchi/blob/9b867998a29f4fd9448fd7866118b4fd086d3cf2/gnocchi/carbonara.py#L106)
 to test statistics with SciPy and [master(2018.01.10)](
 https://github.com/gnocchixyz/gnocchi/blob/7eaaad039ca38e479aecd9fb9d507230253e80c6/gnocchi/carbonara.py#L103)
 to test NumPy. the implementation code can be found in GitHub for exact
