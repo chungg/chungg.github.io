@@ -39,8 +39,8 @@ more tailored solution rather than using an all-purpose toolkit.
 
 ## performance
 
-to test the performance difference for handling time-series statistics in NumPy
-SciPy, and Pandas, the following code was used:
+to test the performance difference for handling time-series statistics in
+NumPy, SciPy, and Pandas, the following code was used:
 
 {% highlight python %}
 import datetime
