@@ -298,10 +298,12 @@ for NumPy (which also may not be the best NumPy implementation).
 
 without going too much into implementation details of Gnocchi, the Pandas
 solution takes multiple AggregatedTimeSerie (a Pandas series wrapped with
-supporting functions) and builds a Pandas dataframe to do aggregation across
+supporting functions) and builds a Pandas DataFrame to do aggregation across
 the time-series collection. for the NumPy solution, we create similar
-AggregatedTimeSerie objects (a NumPy series wrapped with supporting functions).
-the datasets are created as follows:
+AggregatedTimeSerie objects (a NumPy series wrapped with supporting functions)
+but rather than build a DataFrame, we build a AxB matrix where A is the
+number of series and B are the unique timestamps across all the series. the
+datasets are created as follows:
 
 {% highlight python %}
 # gnocchi4.0 code
@@ -430,3 +432,7 @@ by switching from Pandas to NumPy in Gnocchi, we were able to increase
 metric processing throughput and decrease memory usage. with all that said,
 Gnocchi does still require significant CPU but that's
 [maths](https://www.youtube.com/watch?v=X09oxyIeGuY) for you.
+
+
+## revisions
+- 2018-01-12: fixed some english; added more details to multi-series aggregate
