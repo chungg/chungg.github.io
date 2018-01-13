@@ -30,9 +30,10 @@ as [TensorFlow](https://www.tensorflow.org/) but also in Gnocchi. (yes, i'm
 very good at adding in hypewords that are completely unrelated... *cough*
 blockchain, autonomous vehicles, cloud *cough*)
 
-[SciPy](https://www.scipy.org/about.html) is a collection of helper functions
-and tools often used in signal and image processing but also provides the
-ability to compute statistics over an array.
+Alternatively, [SciPy](https://www.scipy.org/about.html) extends NumPy and
+provides a collection of helper functions and tools often used in signal and
+image processing but also provides the ability to compute statistics over an
+array.
 
 the following will highlight the gains Gnocchi achieved by moving towards a
 more tailored solution rather than using an all-purpose toolkit.
