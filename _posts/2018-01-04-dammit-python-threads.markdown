@@ -121,7 +121,7 @@ timeit executor(read_work_write_redis, [(client, f) for f in files], 6)
 {% endhighlight %}
 
 where this becomes arguably interesting is when i change the targets to
-interact with remote targets. when writing to a machine with a ping of ~400ms:
+interact with remote targets. when writing to a machine with a ping of ~400µs:
 {% highlight python %}
 # single-threaded
 timeit executor(read_work_write_file, [('/mnt/tmp', f) for f in files], 1)
@@ -145,7 +145,7 @@ timeit executor(read_work_write_redis, [(client_remote, f) for f in files], 6)
 100 loops, best of 3: 6.28 ms per loop
 {% endhighlight %}
 
-when pushing to a remote machine that is ~200ms away, it becomes less obvious
+when pushing to a remote machine that is ~200µs away, it becomes less obvious
 whether to use a single thread or multiple threads. pushing to redis,
 single thread execution netted better performance in my environment but when
 pushing to a remote disk, the inverse held true:
