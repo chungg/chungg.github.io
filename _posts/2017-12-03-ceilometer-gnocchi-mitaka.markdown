@@ -41,9 +41,10 @@ Ocata code.
 
 ## Installing Gnocchi
 
-To install, I’m running through the Ocata install guide with the only
-difference being, rather than installing the Ocata packages, I’m
-installing Gnocchi and the client via pip:
+To install, I’m running through the [Ocata install guide](
+https://docs.openstack.org/project-install-guide/meter/ocata/) with the only
+difference being, rather than installing the Ocata packages, I’m installing
+Gnocchi and the client via pip:
 
 {% highlight bash %}
 pip install gnocchi[mysql,redis,keystone]
@@ -52,35 +53,37 @@ pip install “gnocchiclient<4.0.0”  # my fix doesn't support >=4.0
 
 for reference, below is my gnocchi.conf
 
->    [api]
->   auth_mode = keystone
->
->   [indexer]
->   url = mysql+pymysql://gnocchi:password@controller/gnocchi
->
->   [keystone_authtoken]
->   # i copied this section from my ocata ceilometer.conf that packstack
->   # configured
->   auth_uri=http://controller:5000/v2.0
->   identity_uri=http://controller:35357
->   admin_user=gnocchi
->   admin_tenant_name=services
->   admin_password=password
->
->   [metricd]
->   workers = 18
->
->   [storage]
->   redis_url = redis://controller:6379
->   driver = redis
->   coordination_url = redis://controller:6379
->   aggregation_workers_number = 8
->   metric_processing_delay = 60
->   metric_reporting_delay = 10
->
->   [incoming]
->   driver = redis
->   redis_url = redis://controller:6379
+{% highlight ini %}
+[api]
+auth_mode = keystone
+
+[indexer]
+url = mysql+pymysql://gnocchi:password@controller/gnocchi
+
+[keystone_authtoken]
+# i copied this section from my ocata ceilometer.conf that packstack
+# configured
+auth_uri=http://controller:5000/v2.0
+identity_uri=http://controller:35357
+admin_user=gnocchi
+admin_tenant_name=services
+admin_password=password
+
+[metricd]
+workers = 18
+
+[storage]
+redis_url = redis://controller:6379
+driver = redis
+coordination_url = redis://controller:6379
+aggregation_workers_number = 8
+metric_processing_delay = 60
+metric_reporting_delay = 10
+
+[incoming]
+driver = redis
+redis_url = redis://controller:6379
+{% endhighlight %}
 
 with all that set, I initialise the Gnocchi service using:
 
@@ -93,10 +96,13 @@ gnocchi-upgrade
 Now that I have Gnocchi4.1 installed, I’ve decided to backport Ceilometer’s
 Gnocchi integration from Ocata.
 
-I first began by copying the gnocchi_client code from Ceilometer as it is not
-in Mitaka. The big difference between Ocata and Mitaka is that in Mitaka,
-Ceilometer uses a global configuration object and also does not use
-keystoneauth1. To get around this, I edited the get_gnocchiclient method:
+I first began by copying the [gnocchi_client](
+https://github.com/openstack/ceilometer/blob/stable/ocata/ceilometer/gnocchi_client.py)
+code from Ceilometer as it is not in Mitaka. The big difference between Ocata
+and Mitaka is that in Mitaka, Ceilometer uses a global configuration object and
+also does not use keystoneauth1. To get around this, I edited the
+[get_gnocchiclient](https://github.com/chungg/ceilometer/blob/mitaka-gnocchi4/ceilometer/gnocchi_client.py)
+method:
 
 {% highlight python %}
 def get_gnocchiclient(conf, endpoint_override=None):
@@ -131,32 +137,36 @@ OpenStack specific resource-types.
 
 ## Using Ocata Gnocchi dispatcher
 
-First, I began by creating gnocchi_resources.yaml by copying the Ocata file
+First, I began by creating gnocchi_resources.yaml by copying the [Ocata file](
+https://github.com/openstack/ceilometer/blob/stable/ocata/ceilometer/dispatcher/data/gnocchi_resources.yaml)
 verbatim.
 
-Next, I overwrote the existing Gnocchi dispatcher with the Ocata version.
+Next, I overwrote the existing Gnocchi dispatcher with the [Ocata version](
+https://github.com/openstack/ceilometer/blob/stable/ocata/ceilometer/dispatcher/gnocchi.py).
 Doing so provides support for capturing event data to track a resource’s
 lifespan. Quite a few tweaks were required in this module ranging from changing
 the dispatcher to handle a global configuration object, to fixing some import
-statements to handle different dependencies. The end result can be found in my
-fork.
+statements to handle different dependencies. The end result can be found in [my
+fork](https://github.com/chungg/ceilometer/blob/mitaka-gnocchi4/ceilometer/dispatcher/gnocchi.py).
 
 With that, all the changes to required to leverage Gnocchi4.1 in Mitaka is
 complete. What remains is to edit ceilometer.conf and add:
 
->    [DEFAULT]
->    meter_dispatchers = gnocchi
->    event_dispatchers = gnocchi
->    # meter|event_dispatchers = database can still remain if you wish to
->    # continue publishing to ceilometer storage as well as Gnocchi.
->
->    [cache]
->    # this is used to minimise requests made to Gnocchi
->    backend_argument = redis_expiration_time:600
->    backend_argument = db:0
->    backend_argument = distrubuted_lock:True
->    backend_argument = url:redis://controller:6379
->    backend = dogpile.cache.redis
+{% highlight ini %}
+[DEFAULT]
+meter_dispatchers = gnocchi
+event_dispatchers = gnocchi
+# meter|event_dispatchers = database can still remain if you wish to
+# continue publishing to ceilometer storage as well as Gnocchi.
+
+[cache]
+# this is used to minimise requests made to Gnocchi
+backend_argument = redis_expiration_time:600
+backend_argument = db:0
+backend_argument = distrubuted_lock:True
+backend_argument = url:redis://controller:6379
+backend = dogpile.cache.redis
+{% endhighlight %}
 
 Once this is set, restarting openstack-ceilometer-collector service should
 start publishing to Gnocchi4, giving you a scalable metric storage solution in

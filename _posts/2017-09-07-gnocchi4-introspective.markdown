@@ -7,8 +7,9 @@ categories: gnocchi performance
 *preface: for full disclosure, i contribute to the Gnocchi project. also, this
 is not about pasta. the following only reflects changes between Gnocchi 3 to
 Gnocchi 4. i’ve yet to decide whether i will do a detailed write-up on changes
-made from Gnocchi 2 to Gnocchi 3 but you can watch a quick vBrownBag talk i
-gave on the topic or glance through a detailed deck.*
+made from Gnocchi 2 to Gnocchi 3 but you can watch a [quick vBrownBag talk](
+https://www.youtube.com/watch?v=ahthA-H0ltQ) i gave on the topic or glance
+through a [detailed deck](https://www.slideshare.net/GordonChung/gnocchi-v3).*
 
 Roughly three years ago, developers in OpenStack set out on a mission: to build
 a scalable, time series optimised, storage service capable of capturing metrics
@@ -20,10 +21,12 @@ solved! Science!”
 ![gnocchi architecture]({{ "/images/gnocchi4-introspective/gnocchi-arch.png" | absolute_url }})
 *figure 1: Gnocchi 4 architecture (Julien Danjou 2017)*
 
-Unfortunately, while evaluating Gnocchi 2 as a potential time series database,
-it was soon realised that the amount of horizontal scaling required for
-Gnocchi to handle the desired use case rendered it unusable. Various changes
-were made to address the faults of Gnocchi 2 based on the initial evaluation.
+Unfortunately, while [evaluating](https://www.slideshare.net/GordonChung/gnocchi-profiling-21x)
+[Gnocchi 2](https://www.slideshare.net/GordonChung/gnocchi-profiling-v2) as a
+potential time series database, it was soon realised that the amount of
+horizontal scaling required for Gnocchi to handle the desired use case rendered
+it unusable. Various changes were made to address the faults of Gnocchi 2 based
+on the initial evaluation.
 
 This continues the ongoing story of how the team is working on improving
 Gnocchi through performance testing to make it scalable rather than “scalable”.
@@ -48,9 +51,10 @@ measures in 5K batches.
 To improve upon this, it was noted that incoming data in reality has a short
 lifespan before it is processed into the storage backend. Given this condition,
 writing incoming data to memory can greatly improve the write throughput of
-Gnocchi. To satisfy this requirement, Gnocchi has added support for Redis and
-for the Ceph driver to leverage the underlying LevelDB/RocksDB Ceph uses to
-store omaps.
+Gnocchi. To satisfy this requirement, Gnocchi has added support for [Redis](
+https://redis.io/) and for the Ceph driver to leverage the underlying
+[LevelDB](http://ceph.com/wp-content/uploads/2017/01/CawthonKeyValueStore.pdf)/[RocksDB](
+https://ceph.com/community/new-luminous-bluestore/) Ceph uses to store omaps.
 
 Using Ceph’s benchmarking tool shows the potential write improvements of
 storing new measures as omaps rather than objects as Gnocchi 3 does.
@@ -107,15 +111,18 @@ where the round-trip of a REST call outweigh internal I/O.
 
 ## numpy v. pandas
 
-In Gnocchi 4.x, most of the core functionality was switched from Pandas to
-Numpy. The reasoning for this was two-fold: first, Pandas is a “data
-structures and data analysis tools for the Python programming language” which
-for the basic workflow of Gnocchi, the majority of the functionality was never
-leveraged; and second, the N-dimensional array structures used in Gnocchi
-performed better when implemented with Numpy rather than Pandas.
+In Gnocchi 4.x, most of the core functionality was switched from [Pandas](
+http://pandas.pydata.org/) to [Numpy](http://www.numpy.org/). The reasoning for
+this was two-fold: first, Pandas is a “data structures and data analysis tools
+for the Python programming language” which for the basic workflow of Gnocchi,
+the majority of the functionality was never leveraged; and second,
+the N-dimensional array structures used in Gnocchi [performed better](
+https://penandpants.com/2014/09/05/performance-of-pandas-series-vs-numpy-arrays/)
+when implemented with Numpy rather than Pandas.
 
-At the time of publication, by removing the dependency on Pandas for services
-which don’t require it, the memory requirements for Gnocchi drops ~35%.
+At the time of publication, by [removing the dependency on Pandas](
+https://github.com/gnocchixyz/gnocchi/issues/61) for services which don’t
+require it, the memory requirements for Gnocchi drops ~35%.
 
 ![gnocchi+pandas]({{ "/images/gnocchi4-introspective/mem-pandas.png" | absolute_url }})
 *figure 3: gnocchi-metricd with Pandas loaded*
@@ -143,16 +150,17 @@ individual metrics at a given time.
 *figure 6: Gnocchi exploding attempting to capture 550K+ metrics (Alex Krzos
 2017)*
 
-When attempting to measure 10K virtual machines in OpenStack, it became evident
+When attempting to [measure 10K virtual machines](
+https://www.youtube.com/watch?v=aHaGipVcIJ4) in OpenStack, it became evident
 that Gnocchi’s scheduling did not gracefully handle the workload sent by
 Ceilometer.
 
 The failure was attributed to two main issues. The first issue was that
 incoming measures were queued as keys in a single object in Ceph which
-resulted in zero distribution and everything getting funnelled into a single
-placement group. Secondly, the scheduling logic ineffectively attempted to
-partition the front of the incoming measures across existing workers as shown
-in Figure 7.
+resulted in zero distribution and everything getting funnelled into a [single
+placement group](https://bugzilla.redhat.com/show_bug.cgi?id=1457767).
+Secondly, the scheduling logic ineffectively attempted to partition the front
+of the incoming measures across existing workers as shown in Figure 7.
 
 ![gnocchi3 scheduling]({{ "/images/gnocchi4-introspective/gnocchi3-sched.png" | absolute_url }})
 *figure 7: Gnocchi 3 scheduling logic*
@@ -170,7 +178,8 @@ distribution of data on the incoming storage driver.
 *figure 8: Gnocchi 4 scheduling logic*
 
 In addition to sharding, a new scheduling logic was implemented to distribute
-sacks across all available workers using consistent hashing. As there are now
+sacks across all available workers using [consistent hashing](
+https://en.wikipedia.org/wiki/Consistent_hashing). As there are now
 many smaller sacks compared to a single giant stack previously, every sack can
 now be fully scheduled and therefore, no measures are left unprocessed in a
 processing cycle.

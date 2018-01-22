@@ -6,17 +6,19 @@ tags: edge-computing cloud-computing
 ---
 *... under the cloud, peering through the fog, reaching for the edge*
 
-In late 1996, a group of executives at Compaq Computers were thinking about the
+In [late 1996](https://www.technologyreview.com/s/425970/who-coined-cloud-computing/),
+a group of executives at Compaq Computers were thinking about the
 future of the Internet business and coined the term “cloud computing”. The
 original vision of “cloud computing-enabled applications” has grown to provide
 every “as-a-Service” derivative imaginable, funding a multi-billion dollar
-industry which Gartner estimates to hit nearly $250 billion in 2017.
+industry which Gartner estimates to hit nearly [$250 billion in 2017](
+https://www.wired.com/story/its-time-to-think-beyond-cloud-computing/).
 
 > Everything that’s popular in technology is replaced by something else. It
 > always goes away… if you want to predict the future, subtract something
 > important today, and replace it with something else.
 >
-> -- Peter Levine, 2016, The End of Cloud Computing
+> -- [Peter Levine](https://a16z.com/2016/12/16/the-end-of-cloud-computing/), 2016, The End of Cloud Computing
 
 As with all things in technology though, it’s on to the next one and what’s old
 is often made new again (i think this might explain the high hipster rate in
@@ -30,16 +32,21 @@ computing where computing is mobile and massively data driven by sensors.
 
 In IoT, processing moves to the edge where devices must sense, infer, and act
 in real-time. While this processing can be done more quickly in the cloud, if
-the devices themselves can do the computing, the latency and bandwidth load can
+the devices themselves can do the computing, the [latency](
+http://www.verizonenterprise.com/about/network/latency/) and bandwidth load can
 be saved on the network. For reference, a self-driving car generates over 10GB
 of data per mile and requires real-time processing on the data.
 
 The most prominent use case for edge computing is automated vehicles where
-companies such as Waymo and Intel are adding more and more sophisticated
-hardware to vehicles. In addition to that, mobile device and semiconductor
-companies such as Huawei, ARM, and Apple are building hardware to better handle
-tasks locally to allay privacy concerns and to piggyback off the even bigger AI
-trend.
+companies such as [Waymo and Intel](https://www.wired.com/story/waymo-and-intel-self-driving/)
+are adding more and more sophisticated hardware to vehicles. In addition to
+that, mobile device and semiconductor companies such as [Huawei](
+http://consumer.huawei.com/en/press/news/2017/ifa2017-kirin970/), [ARM](
+https://www.theverge.com/2017/5/29/15707606/arm-cortex-a75-a55-mali-g72-specs-announced),
+and [Apple](https://www.wired.com/story/apples-neural-engine-infuses-the-iphone-with-ai-smarts/)
+are building hardware to better handle tasks locally to allay
+[privacy concerns](https://www.engadget.com/2017/09/06/huawei-mobile-ai-ifa-2017/)
+and to piggyback off the even bigger AI trend.
 
 That said, even as the world begins its slow shift to edge computing, cloud
 computing remains a relevant endpoint for providing massive computing on batch
@@ -85,9 +92,10 @@ which is arguably your biggest issue with monitoring multiple clouds.*
 
 # inspired by StatsD
 
-StatsD is a daemon originally released by Etsy back in 2011 to help developers
-instrument an application with a simple goal of making dope graphs... and
-monitoring application health.
+StatsD is a daemon originally released by [Etsy back in 2011](
+https://codeascraft.com/2011/02/15/measure-anything-measure-everything/) to
+help developers instrument an application with a simple goal of making dope
+graphs... and monitoring application health.
 
 ![graphite+statsd]({{ "/images/ubiquitous/statsd.png" | absolute_url }})
 *Graphite+StatsD (Etsy 2011)*
