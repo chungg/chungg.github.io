@@ -4,32 +4,32 @@ title:  "python: when to use threads"
 date:   2018-01-04 17:00:00 -0500
 tags: python concurrency fml
 ---
-let's have a fun talk about that GIL...
+Let's have a fun talk about that GIL...
 
-ok, let's not because i don't know enough about it and far smarter people have
-written vastly about it already. if you do want to want to learn about the GIL
+OK, let's not because i don't know enough about it and far smarter people have
+written vastly about it already. If you do want to want to learn about the GIL
 and would like a headache, i've found Larry Hastings' talk on
 [removing the GIL](https://www.youtube.com/embed/P3AyI_u66Bw) interesting.
-ultimately, all posts regarding threading state that it is only useful if
+Ultimately, all posts regarding threading state that it is only useful if
 something is I/O-bound. the [ambiguity](https://www.youtube.com/watch?v=kTHNpusq654)
 of the term "I/O-bound" will confound you for the rest of your life.
 
-for my purposes, i've been benchmarking the most recent code of
+For my purposes, i've been benchmarking the most recent code of
 [Gnocchi](http://gnocchi.xyz) to verify we didn't introduce any performance
-regressions since the last release. as i lost my Ceph environment recently,
+regressions since the last release. As i lost my Ceph environment recently,
 i've been benchmarking using a redis+file Gnocchi deployment rather than a pure
 Ceph deployment as i've done [previously](https://www.slideshare.net/GordonChung/gnocchi-v4-preview)
 
-during my benchmarking, i discovered an issue when adjusting the
+During my benchmarking, i discovered an issue when adjusting the
 `parallel_operations` option in Gnocchi which executes certain I/O related
-parts of the code in threads to improve performance. suffice it to say, it did
-not improve performance but rather decreased performance by 15%-30%. this was
+parts of the code in threads to improve performance. Suffice it to say, it did
+not improve performance but rather decreased performance by 15%-30%. This was
 contrary to the results i had when benchmarking Gnocchi previously, which
 gave 25% better performance when threading was enabled.
 
-so i decided to do what i normally don't do: not give up. i wrote really
-trivial code to test what was happening. the following is my test code
-which crudely simulates a part of Gnocchi's code. it will essentially try
+So i decided to do what i normally don't do: not give up. I wrote really
+trivial code to test what was happening. The following is my test code
+which crudely simulates a part of Gnocchi's code. It will essentially try
 to read and write eight unique time-series to it's own file/key/object:
 
 {% highlight python %}
@@ -93,10 +93,10 @@ def read_work_write_file(path, key):
     os.rename(tmpfile.name, dest)
 {% endhighlight %}
 
-running the above code, i got what i saw while running my test script against
+Running the above code, i got what i saw while running my test script against
 Gnocchi: threading sucks and makes things worse.
 
-when reading and writing to the local disk, the performance dips up to 8x
+When reading and writing to the local disk, the performance dips up to 8x
 occassionally:
 {% highlight python %}
 # single-threaded
@@ -108,8 +108,9 @@ timeit executor(read_work_write_file, [('/tmp', f) for f in files], 6)
 100 loops, best of 3: 4.31 ms per loop
 {% endhighlight %}
 
-a similar result happens when interacting with a local redis. I/O in this case
+A similar result happens when interacting with a local redis. I/O in this case
 should be less significant as it's now interacting with an in-memory service:
+
 {% highlight python %}
 # single-threaded
 timeit executor(read_work_write_redis, [(client, f) for f in files], 1)
@@ -120,8 +121,9 @@ timeit executor(read_work_write_redis, [(client, f) for f in files], 6)
 100 loops, best of 3: 4.87 ms per loop
 {% endhighlight %}
 
-where this becomes arguably interesting is when i change the targets to
-interact with remote targets. when writing to a machine with a ping of ~400µs:
+Where this becomes arguably interesting is when i change the targets to
+interact with remote targets. When writing to a machine with a ping of ~400µs:
+
 {% highlight python %}
 # single-threaded
 timeit executor(read_work_write_file, [('/mnt/tmp', f) for f in files], 1)
@@ -132,9 +134,10 @@ timeit executor(read_work_write_file, [('/mnt/tmp', f) for f in files], 6)
 10 loops, best of 3: 19.5 ms per loop
 {% endhighlight %}
 
-in the above case, writing to a remote drive makes the threaded scenario perform
-almost 2x better. similarly, when pushing to a redis service on the same remote
+In the above case, writing to a remote drive makes the threaded scenario perform
+almost 2x better. Similarly, when pushing to a Redis service on the same remote
 machine, threading performs better:
+
 {% highlight python %}
 # single-threaded
 timeit executor(read_work_write_redis, [(client_remote, f) for f in files], 1)
@@ -145,10 +148,11 @@ timeit executor(read_work_write_redis, [(client_remote, f) for f in files], 6)
 100 loops, best of 3: 6.28 ms per loop
 {% endhighlight %}
 
-when pushing to a remote machine that is ~200µs away, it becomes less obvious
-whether to use a single thread or multiple threads. pushing to redis,
+When pushing to a remote machine that is ~200µs away, it becomes less obvious
+whether to use a single thread or multiple threads. Pushing to Redis,
 single thread execution netted better performance in my environment but when
 pushing to a remote disk, the inverse held true:
+
 {% highlight python %}
 # single-threaded
 timeit executor(read_work_write_file, [('/mnt/tmp', f) for f in files], 1)
@@ -163,15 +167,20 @@ timeit executor(read_work_write_redis, [(client_remote, f) for f in files], 6)
 100 loops, best of 3: 4.72 ms per loop
 {% endhighlight %}
 
-so when should you use threads? i have no idea. for reference, the fake
+So when should you use threads? i have no idea. For reference, the fake
 workload i am creating in this scenario is minimal so it's definitely
 I/O-bound regardless if storage is local or remote:
+
 {% highlight python %}
 timeit fake_work()
 100000 loops, best of 3: 6.75 µs per loop
 {% endhighlight %}
 
-all i can conclude is that concurrency is not parallelism, threading in python
-is concurrency, and concurrency in python is a b!tch. that said, you probably
+All i can conclude is that concurrency is not parallelism, threading in python
+is concurrency, and concurrency in python is a b!tch. That said, you probably
 don't need threading if you're doing anything locally... although it could be a
 big file... but how big a file... ARGGGHHH! 
+
+## revisions
+- 2018-01-22: so you like capitals?
+

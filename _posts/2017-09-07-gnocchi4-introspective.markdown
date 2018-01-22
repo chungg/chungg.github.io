@@ -28,7 +28,7 @@ were made to address the faults of Gnocchi 2 based on the initial evaluation.
 This continues the ongoing story of how the team is working on improving
 Gnocchi through performance testing to make it scalable rather than “scalable”.
 
-## Building a Test Case
+## building a test case
 
 The test case used to measure performance is built around the following use
 case: ingest minute data spanning a few hours for hundreds of thousands of
@@ -39,7 +39,7 @@ metrics each and pushing batched measures periodically.
 
 *see Additional Info for test environment details*
 
-## In-memory performance
+## in-memory performance
 
 As of Gnocchi 3, deploying 32 API workers on a single node enabled Gnocchi to
 write nearly a million measures per second (~970K measures/s) when pushing
@@ -73,7 +73,7 @@ Max latency(s): 2.6162
 Min latency(s): 0.00106848
 {% endhighlight %}
 
-vs
+vs.
 
 {% highlight bash %}
 $ rados bench -p gnocchi 120 write -t 32 — write-omap -b 512
@@ -91,7 +91,6 @@ Average Latency(s): 0.00238943
 Stddev Latency(s): 0.0100267
 Max latency(s): 0.978732
 Min latency(s): 0.00104604
-
 {% endhighlight %}
 
 The result of this switch enables Gnocchi 4 to record more than 1.3M measures/s
@@ -99,14 +98,14 @@ The result of this switch enables Gnocchi 4 to record more than 1.3M measures/s
 case. Gnocchi 2 and 3 tests were run against a 30OSD Ceph cluster compared to a
 20OSD cluster for Gnocchi 4. (hardware retention in IT is a hard knock life)
 
-![POST time]({{ "/images/gnocchi4-introspective/post-time.png" | absolute_url }})
+![POST time]({{ "/images/gnocchi4-introspective/post-performance.png" | absolute_url }})
 *figure 2: 4 clients running benchmark with 12 threads each against 32 process
 uwsgi service*
 
 It should be noted that writing to memory has a lesser effect on small requests
 where the round-trip of a REST call outweigh internal I/O.
 
-## Numpy v. Pandas
+## numpy v. pandas
 
 In Gnocchi 4.x, most of the core functionality was switched from Pandas to
 Numpy. The reasoning for this was two-fold: first, Pandas is a “data
@@ -131,7 +130,7 @@ defined test case.
 ![processing time]({{ "/images/gnocchi4-introspective/process-time.png" | absolute_url }})
 *figure 5: time to process 20K metrics with 60 points each using 18 workers*
 
-## Scheduling & Sharding
+## scheduling & sharding
 
 As mentioned above, much of the testing involved periodically shoving batched
 data into Gnocchi — the changes in Gnocchi 3 were heavily driven by this use
@@ -155,7 +154,7 @@ placement group. Secondly, the scheduling logic ineffectively attempted to
 partition the front of the incoming measures across existing workers as shown
 in Figure 7.
 
-![gnocchi3 scheduling]({{ "/images/gnocchi4-introspective/gnocch3-sched.png" | absolute_url }})
+![gnocchi3 scheduling]({{ "/images/gnocchi4-introspective/gnocchi3-sched.png" | absolute_url }})
 *figure 7: Gnocchi 3 scheduling logic*
 
 The scheduling logic would fail because it behaved more like a stack than a
@@ -192,20 +191,20 @@ quicker than Gnocchi 3
 Running tests against the original test case shows Gnocchi still handles the
 batched measures scenario well.
 
-![processing time]({{ "/images/gnocchi4-introspective/post-performance.png" | absolute_url }})
+![processing time]({{ "/images/gnocchi4-introspective/post-time.png" | absolute_url }})
 *figure 10: time to process 20K metric, 60 points each*
 
 With 18 workers, Gnocchi 4 can process 20K metrics with 60 measures each in
 less time than Gnocchi 3, running 3x more workers.
 
-## TL;DR
+## tl;dr
 
 The upcoming release of Gnocchi 4 updates the incoming storage drivers, the
 underlying processing tool, and the scheduling logic which enables Gnocchi to:
 write faster, use less memory, and better handle large datasets of unbatched
 measures with less resource requirements.
 
-## Additional Info
+## additional info
 
 More measurements and details on the test environment can be found in [original
 deck](https://www.slideshare.net/GordonChung/gnocchi-v4-past-and-present).
