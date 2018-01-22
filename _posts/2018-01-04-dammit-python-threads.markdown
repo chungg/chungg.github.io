@@ -2,7 +2,7 @@
 layout: post
 title:  "python: when to use threads"
 date:   2018-01-04 17:00:00 -0500
-categories: python concurrency fml
+tags: python concurrency fml
 ---
 let's have a fun talk about that GIL...
 

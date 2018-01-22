@@ -2,7 +2,7 @@
 layout: post
 title:  "numpy in the sky, i can go twice as high"
 date:   2018-01-10 10:30:00 -0500
-categories: numpy pandas scipy groupby statistics performance
+tags: numpy pandas scipy groupby performance
 ---
 in addition to storing time-based data efficiently, one of the main functions
 a time-series database provides is the ability to query over temporal data and
@@ -417,13 +417,13 @@ https://github.com/gnocchixyz/gnocchi/issues/61#issuecomment-305701694). by
 swapping out Pandas for SciPy and then SciPy for NumPy, memory usage for
 Gnocchi's processing workers drops more than 40%.
 
-![gnocchi3 htop]({{ "/images/groupby-gnocchiv3.png" | absolute_url }})
+![gnocchi3 htop]({{ "/images/groupby/gnocchiv3.png" | absolute_url }})
 Gnocchi3 memory usage
 
-![gnocchi3 htop]({{ "/images/groupby-gnocchiv4.png" | absolute_url }})
+![gnocchi3 htop]({{ "/images/groupby/gnocchiv4.png" | absolute_url }})
 (almost) Gnocchi4.1 memory usage
 
-![gnocchi3 htop]({{ "/images/groupby-gnocchiv4next.png" | absolute_url }})
+![gnocchi3 htop]({{ "/images/groupby/gnocchiv4next.png" | absolute_url }})
 (potential) Gnocchi4.2 memory usage
 
 
