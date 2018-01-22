@@ -336,6 +336,7 @@ timeit carbonara.AggregatedTimeSerie.aggregated([max_series, max_series, \
 # master(2018.01.10) code. each version was run separately, shown together
 # for convenience
 timeit processor.aggregated([(ref1, max_series), (ref2, max_series)], \
+                             (ref3, max_series)], \
                             operations=["aggregate", "mean", \
                                         ["metric", "metric1", "metric2"]], \
                             fill=0)["aggregated"]
