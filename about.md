@@ -9,9 +9,10 @@ by others by googling said code i don't understand; and reply to queries
 regarding my poorly written code by googling afore-metioned code in an
 attempt to figure out my beautiful mind.
 
-i'm focused on data and currently contribute to [Gnocchi](http://gnocchi.xyz).
-i previously worked on the cloud at Huawei Technologies Canada, Red Hat,
-eNovance, and IBM.
+i'm currently an engineer at [d1g1t](http://d1g1t.com) where i focused on
+financial data. previously, i worked on the cloud at Huawei, Red Hat, eNovance,
+and IBM. i'm currently helping build [Gnocchi](http://gnocchi.xyz), an
+inifinitely scalable, time-series database.
 
 off the clock, i can be found building LEGO, dancing randomly, or teaching my
 mom that the button doesn't work because she's clicking the button in a
