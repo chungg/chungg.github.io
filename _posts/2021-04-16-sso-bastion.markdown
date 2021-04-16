@@ -5,16 +5,18 @@ date:   2021-04-16 11:00:00 -0500
 tags: aws ecs bash google sso
 ---
 
-In cloud environments, access to resources are typical controled by roles via
+In cloud environments, access to resources are typically controled by roles via
 a provider's identity management service. This provides a single service that
-provides granular control on what a user can do and also the ability view a
+allows granular control on what a user can do and also the ability view a
 user's actions for audit. By controling access via IAM or Azure Active
 Directory, security can be improved as rather than opening a port to the
 internet and restricting access to a set of IPs behind a firewall, access be
 granted by the identity provider instead, often with 2FA. As an operator, this
 can often place cumbersome barriers if they need to connect to a resource and
 perform a function, like querying a database or debugging an issue when logs
-and monitoring metrics do not provide enough detail.
+and monitoring metrics do not provide enough detail. Also, common tools like
+`scp` are not possible anymore so transferring data requires interacting
+with another service.
 
 Additionally, to minimise exposure, cloud resources are typically not
 publically accessible but rather a single public facing endpoint
@@ -32,7 +34,7 @@ Official steps can be found [here](https://docs.aws.amazon.com/systems-manager/l
 
 At a high-level:
 
-1. Ensure the instance you'd like to connect to a Managed instance
+1. Ensure the instance you'd like to connect to is a Managed instance
 
 2. Edit local ~/.ssh/config file:
 
@@ -42,7 +44,7 @@ host i-*
     ProxyCommand sh -c "aws ssm start-session --target %h --document-name AWS-StartSSHSession --parameters 'portNumber=%p'"
 ```
 
-if you have multiple aws profiles, you will need to add extries for them as
+If you have multiple aws profiles, you will need to add entries for them as
 well. See below for example.
 
 3. Ensure user's role has permission against action `ssm:StartSession` against
@@ -78,9 +80,8 @@ aws-google-auth -I <google IDP> -S <google SP> -u <username> -R <region> -p <nam
 ```
 
 Note that the actual timeout limit is dependent on setting in AWS.
-
-3. If successful, you should see entries in `~/.aws/credentials` and
-   `~/.aws/config` that correspond to the profile name you provided.
+If successful, you should see entries in `~/.aws/credentials` and
+`~/.aws/config` that correspond to the profile name you provided.
 
 ### connecting to a task
 
@@ -109,7 +110,7 @@ a staging web blue
 The script below is based on a specific deployment architecture as well as
 a cluster and task naming taxonomy. It has the deployments separated into three
 environments/accounts: test, staging and production. Additionally, the
-application has a worker and web tasks and lastly, that there is a blue/green
+application has a worker and web tasks and lastly, there is a blue/green
 version of each task. Depending on your deployment, you will need to modify
 accordingly.
 
