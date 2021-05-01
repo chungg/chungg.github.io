@@ -1,0 +1,122 @@
+---
+layout: post
+title:  "podman: containers without docker"
+date:   2021-04-30 16:00:00 -0500
+tags: podman docker kubernetes redhat dev
+---
+
+As a disclaimer, I have nothing against Docker. This is just an experiment for an alternative
+workflow.
+
+When running containers locally, i use them solely to run services i depend on 
+when developing an application which in most cases are some combination of: PostgreSQL, Redis,
+and MongoDB. To do this, i've been using the following file in some variation for years:
+
+```yaml
+version: '3'
+
+services:
+  db:
+    image: postgres:13
+    container_name: postgres
+    volumes:
+      - postgres-vol:/var/lib/postgresql/data
+    restart: always
+    command: ["-c", "max_connections=255"]
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: docker
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+  mongo:
+    image: mongo
+    container_name: mongo
+    volumes:
+      - mongo-vol:/data/db
+    ports:
+      - "27017:27017"
+
+volumes:
+  postgres-vol:
+  mongo-vol:
+```
+
+As you can see, all it does is start a container for each service with standard settings and
+it creates volumes for PostgreSQL and MongoDB so the data is persisted if i ever stop service.
+Nothing fancy is done with networking or any other configuration you can adjust and what exists
+perfectly fine.
+
+BUT, there is an alternative and in fact, if you run `yum install docker` in CentOS 8.2, it will
+install this alternative (at least in the image i used): [Podman](https://podman.io/).
+
+So what is Podman? `Podman is a daemonless container engine for developing, managing, and running
+OCI Containers on your Linux System`. So what is it from the POV of someone who did very little
+reading and was confused when the `docker` command didn't exist even after installing Docker? It's
+Docker with some Kubernetes stuff sprinkled in (I know little about both).
+
+So why would you use Podman aside from the fact it's being installed when you originally wanted
+Docker? It apparently is:
+
+- more [secure](https://thenewstack.io/a-security-comparison-of-docker-cri-o-and-containerd/) as
+  it doesn't require root
+- [faster](https://www.redhat.com/sysadmin/introduction-crun). At a high-level, Docker uses
+  `runc` as it's container runtime, which is written in Go and Podman by default uses `crun`
+  which is in C, among other things i imagine. A good page that goes more in depth
+  regarding container runtimes can be found [here](https://www.capitalone.com/tech/cloud/container-runtime/).
+  Regardless, i'm spawning 3 containers locally so this doesn't really matter to me.
+- less memory intensive. Again, i have 3 containers...
+
+With that said, even though it claims you can just `alias docker=podman`, some things i noticed
+when running Podman 2.2.1:
+
+- it [doesn't use crun](https://github.com/containers/podman/issues/8893), it uses runc by default.
+- [podman-compose](https://github.com/containers/podman-compose) didn't work even with my trivial
+  docker-compose file. Apparently Podman 3.0 supports docker-compose files. ¯\_(ツ)_/¯
+- `podman generate kube <pod>` does not generate a complete file as it misses the volumes.
+  This seems to be addressed in [Podman 3.1](https://podman.io/releases/2021/04/02/podman-release-v3.1.0.html)
+
+I'm sure there's more to `podman generate kube <pod>` but at a high-level, it builds a
+docker-compose-like kubernetes-compatible file which you can use to build an equivalent environment
+on another machine(s). Since Podman 2.x doesn't seem capable of running my docker-compose file, i
+manually created the environment:
+
+```bash
+# it didn't like sharing 'net' which is there by default so i removed it
+podman pod create --name dev --share cgroup,ipc,uts 
+# create volumes
+podman volume create mongo-vol
+podman volume create postgres-vol
+# start services
+podman run -td --pod dev --name postgres --volume postgres-vol:/var/lib/postgresql/data \
+-p 5432:5432 --restart always -e POSTGRES_PASSWORD=podman postgres:13 \
+postgres -c max_connections=255
+podman run -td --pod dev --name mongo --volume mongo-vol:/data/db -p 27017:27017 --restart always \
+mongo
+podman run -td --pod dev --name redis -p 6379:6379 --restart always
+```
+
+Most of the typical `docker` commands are available through the `podman` command. One help command is
+`podman logs <container>` for debugging when things don't work as expected.
+
+One neat feature is that once you have the pod up and running you can run `podman pod stop <pod>`
+and `podman pod start pod` rather than `docker-compose up -d`/`docker-compose down` and having to
+recall the correct docker-compose file.
+
+The resulting genrated file can be found
+[here](https://gist.github.com/chungg/4c8ebe56359b92e53f992dc111cf0f12). Running
+`podman play kube <file>` will create the pod if not created already.
+
+And the end result of this:
+
+![docker htop]({{ "/images/podman/docker-htop.jpg" | absolute_url }})
+*docker memory usage on startup*
+
+![podman htop]({{ "/images/podman/podman-htop.jpg" | absolute_url }})
+*podman memory usage on startup*
+
+So is it worth switching if you're use case is to create a dev environment of 3 databases? No.
+But since you may not have a choice, it's also not terrible. 
