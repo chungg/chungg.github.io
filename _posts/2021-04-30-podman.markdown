@@ -22,7 +22,7 @@ services:
     volumes:
       - postgres-vol:/var/lib/postgresql/data
     restart: always
-    command: ["-c", "max_connections=255"]
+    command: ["-c", "max_connections=32", "-c", "fsync=off"]
     ports:
       - "5432:5432"
     environment:
@@ -94,7 +94,7 @@ podman volume create postgres-vol
 # start services
 podman run -td --pod dev --name postgres --volume postgres-vol:/var/lib/postgresql/data \
 -p 5432:5432 --restart always -e POSTGRES_PASSWORD=podman postgres:13 \
-postgres -c max_connections=255
+postgres -c max_connections=32 -c fsync=off
 podman run -td --pod dev --name mongo --volume mongo-vol:/data/db -p 27017:27017 --restart always \
 mongo
 podman run -td --pod dev --name redis -p 6379:6379 --restart always
