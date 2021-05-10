@@ -1,0 +1,101 @@
+---
+layout: post
+title:  "til: clearing some bookmarks"
+date:   2021-05-10 16:00:00 -0500
+tags: architecture design ci postgresql django
+---
+
+Generally, when i read or watch technical things, i'll bookmark the item for a later date, review
+it when i have time, and if i find them interesting i'll keep them bookmarked. What usually happens
+is 3 years later, i'll look at the bookmarks and wonder what it is and why i bookmarked it and i go
+through the entire cycle again until the information becomes outdated and i straight up delete it.
+This is mainly so i can clear bookmarks i have and avoid this cycle but hopefully this may be
+useful in the future. ¯\\_(ツ)_/¯
+
+
+Design
+======
+
+[Why Distributed Systems Are Hard](https://youtu.be/w9GP7MNbaRc)
+----------------------------------
+
+![distrbuted systems]({{ "/images/til/distributed-systems.jpg" | absolute_url }})
+
+- offers a solid intro on building distributed systems: microservices and scaling horizontally
+- gives a relatively detailed look at CAP theorem
+- touches on handling consistency via consensus algorithms such as Raft
+- brings up topics on managing models across services
+- **top notch slide design**
+
+
+[Monolith Decomposition Patterns](https://youtu.be/9I9GdSQ1bbM)
+---------------------------------
+
+![microservices]({{ "/images/til/microservices.jpg" | absolute_url }})
+
+- good talk on how to start moving to microservices, if you do need to move to it
+- doesn’t say this in detail but microservices are inherently slower, more complicated
+  - network is involved
+  - data integrity may need to be done at application level rather than db
+- extract incrementally. microservices might not do what you hope/think.
+  - create an interface to the code you want to extract but have that interface still
+    communicate with existing code
+  - have new service adhere to interface
+  - use feature flag to test whether new service provides expected results
+- goes into quick overview how AP vs CP is desired based on context
+
+
+[Modern Continuous Delivery](https://youtu.be/wjF4X9t3FMk)
+----------------------------
+
+![modern cd]({{ "/images/til/modern-cd.jpg" | absolute_url }})
+
+- provides an overview of current state of CD pipeline and how it looks in monolith and
+  microservices
+- build your teams around products and not projects
+  - don’t separate devs, testers, ops; group them together by product so they own it
+  - own what you build.
+- use trunk based development. Use feature flags.
+  - each commit builds it’s own version of image which you test. if all is good, deploy.
+- deployment strategies: rolling, blue/green, canary
+- something i learned in OpenStack but database changes are not allowed to break current
+  version.
+  - if you want to rename a field, add the field and write to both.
+  - allows for the aforementioned deploymented strategies.
+
+
+PostgreSQL
+==========
+
+[I Didn't Know Postgres Could Do That](https://youtu.be/HWfxUvW1ejw)
+--------------------------------------
+
+![postgres tricks]({{ "/images/til/postgres-tricks.jpg" | absolute_url }})
+
+- install pg_stat_statements before anyone notices. useful for debugging.
+- postgres has transactional DDL
+  - you can create an index or table but not commit it
+  - example: begin; alter table; savepoint; insert data to test; rollback to savepoint; commit;
+    - allows you to effectively test your DDL change
+- `returning` on insert/update/delete commands to return back stuff that was impacted
+  - allows you to chain queries together as a single statement (with CTE)
+- `tsrange` datatype to define a range of timestamps instead of two columns specifying start/stop
+- window functions and whether it's better to do in application or in db
+  - it's relatively trivial when done in Postgres
+
+
+[A Pythonic Full-Text Search](https://youtu.be/kOKwEDHeBX4)
+-----------------------------
+
+![fuzzy search]({{ "/images/til/fuzzy-search.jpg" | absolute_url }})
+
+A few years ago, i built a solution to capture OpenStack events in ElasticSearch called Panko. It
+had little adoption once we broke it out of the Ceilometer service. Aside from the fact it didn't
+provide much value, the main feedback i got from Ops was because it was ElasticSearch. Fast
+forward a few years and while actually doing Ops works, I realised why. Running ElasticSearch is a
+~painful~ non-trivial operation. The managed service cloud providers provide is no better.
+
+This talk is Django specific in that it uses Django's ORM but can extrapolate this as it uses
+Postgres underneath. Ultimately, go down this route first as it saves the headache of ElasticSearch
+and minimises cost of adding another service and hiring an ElasticSearch consultant to tell you
+you’re doing it wrong.
