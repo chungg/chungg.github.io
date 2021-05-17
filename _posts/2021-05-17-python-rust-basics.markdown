@@ -10,7 +10,6 @@ guaranteed to work as is (in fact most likely won't).
 
 variables
 =========
-
 ```rust
 // foo = 'a'
 let foo: char = 'a';
@@ -39,7 +38,7 @@ data types
 ==========
 
 tuples
-******
+------
 ```rust
 // tup = (1, 2 '2')
 let tup = (1u8, 2u16, '2');
@@ -55,7 +54,7 @@ tup.1;
 ```
 
 array
-*****
+-----
 ```rust
 // i don't use array lib in python
 // arr = numpy.arange(1, 6, dtype=numpy.int32)
@@ -77,10 +76,10 @@ arr.len();
 ```
 
 std lib types
-*************
+-------------
 
-string
-------
+### string
+
 In Rust there are `String` and `&str`. The latter is most aligned with python as in python
 strings are immutable.
 
@@ -97,8 +96,8 @@ for c in chars {
 }
 ```
 
-vector/list
-------
+### vector/list
+
 vectors appear to be similar to lists in python as in their size is dynamic
 ```rust
 // values = list(range(10))
@@ -126,8 +125,8 @@ for i in values.iter() {
 
 ```
 
-hashmap
--------
+### hashmap
+
 ```rust
 // hm = dict()
 use std::collections::HashMap;
@@ -144,8 +143,8 @@ hm.contains_key("value")
 hm.entry("value").or_insert("hi".to_string())
 ```
 
-set
----
+### set
+
 ```rust
 // values = set()
 use std::collections::HashSet;
@@ -157,8 +156,8 @@ values.insert("blah".to_string())
 values.contains("foo")
 ```
 
-casting
-*******
+### casting
+
 ```rust
 // blah = 32.1
 // blah = int(blah)
@@ -176,7 +175,7 @@ flow
 ====
 
 if/else
-*******
+-------
 ```rust
 // if value == 1:
 //     print("hi")
@@ -194,7 +193,7 @@ if value == 1 {
 ```
 
 switch/case/match
-*****************
+-----------------
 ```rust
 // only exist in python3.10
 match value {
@@ -207,10 +206,10 @@ match value {
 ```
 
 loops
-*****
+-----
 
-for
----
+### for
+
 ```rust
 // for i in range(1, 100):
 //     print(i)
@@ -219,8 +218,8 @@ for i in 1..100 {
 }
 ```
 
-while
------
+### while
+
 ```rust
 // while True:
 //     print("hi")
@@ -241,8 +240,8 @@ while x < 5 {
 }
 ```
 
-iterating
----------
+### iterating
+
 ```rust
 // any(i for i in arr if i == 2)
 arr.iter().any(|&x| x == 2)
@@ -260,8 +259,8 @@ value = arr.iter().find(|&x| *x == 2)
 value = arr.iter().position(|&x| x == 2)
 ```
 
-more
-----
+### more
+
 ```rust
 // break multiple loops
 'outer: loop {
@@ -295,7 +294,7 @@ do_something(&value, 2) // see ownership for `&`
 ```
 
 lambdas/closures
-****************
+----------------
 ```rust
 // something = lambda x: x
 let something = |x: i32| -> i32> { x };
@@ -349,10 +348,10 @@ println!("x is still 1");
 - `pub <use|fn|mod|struct>` to all access outside current module
 
 modules
-*******
+-------
 
 import/use
-**********
+----------
 ```rust
 // from a.b.c import d, e
 // from a.b.c import *
