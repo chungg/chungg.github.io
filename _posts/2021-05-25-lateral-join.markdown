@@ -9,7 +9,7 @@ I'm not entirely sure how i found lateral joins. Maybe i was searching for reaso
 was slow. Maybe google watches my incognito/private search history and realised i don't know
 anything. Regardless, lateral joins are awesome and can help simplify and optimise queries.
 
-From PostgreSQL docs::
+From PostgreSQL docs:
 
 > allows (subqueries) to reference columns provided by preceding FROM items. (Without LATERAL,
 > each subquery is evaluated independently and so cannot cross-reference any other FROM item.
@@ -49,7 +49,7 @@ the two tables together. The problem is that the price of the product may not ch
 price table may not have a price for every date in the inventory table. There are many options to
 address this, you could leverage tsrange data types for example but that may increase complexity
 in the model. Typically, i've used a window function to figure out a range of dates a price is
-valid for similar to the following::
+valid for similar to the following:
 
 ```sql
 select i.*, p.price
@@ -87,7 +87,7 @@ Both queries will give the same result but the latter is more readable (once you
 `LATERAL` join is). It also has better performance. With an `INVENTORY` table of ~45M rows
 (~100 people, each with ~25 products over ~50 years) and a `PRICE` table of ~4.5M rows (over ~50
 years), querying the value of each product an individual holds on a given day generates the
-following plans::
+following plans:
 
 ```sql
 -- normal join
@@ -131,7 +131,7 @@ following plans::
 
 The `LATERAL` join query returns in a fraction of the time. Similarly, on a larger query that
 grabs the value of each product an individual holds at the end of each year, `LATERAL` join still
-provides marked performance gains::
+provides marked performance gains:
 
 ```sql
 -- regular join

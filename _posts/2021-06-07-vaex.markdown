@@ -11,14 +11,14 @@ falter on is "large" datasets. To address this, there are many solutions. Some, 
 [dask](https://dask.org) and Spark, schedule work to clusters to distrbute work. Others, like
 [vaex](https://vaex.io), just load less.
 
-Vaex's solution of loading less can be done similarly with Pandas but it does so while presenting
+vaex's solution of loading less can be done similarly with Pandas but it does so while presenting
 the facade of loading the entire dataset and without the need for additional nodes. This is great
 because distributed systems are hard and fragile.
 
 # Loading Data
 
 Working with a generated random dataframe with a timestamp column and 3 double-precision float
-columns, loading 5.2M rows in various file formats::
+columns, loading 5.2M rows in various file formats:
 
 ```python
 # ~1.63GB file on disk
@@ -65,7 +65,7 @@ A common use case given a time-series dataset is to group and aggregate the data
 it only builds series and not dataframes so it provides less functionality and flexibility but
 this is only highlighting vaex's grouping ability.
 
-Using Gnocchi's time-series functionality::
+Using Gnocchi's time-series functionality:
 
 ```python
 from gnocchi import carbonara
@@ -92,7 +92,7 @@ timeit carbonara.GroupedTimeSeries(g_ts, 'M').count()
 ```
 
 It's able to group 5.2M datapoints to 1.2K groups between ~3.5s and ~20s depending on the
-aggregation method. Doing the same with vaex::
+aggregation method. Doing the same with vaex:
 
 ```python
 import vaex
@@ -134,7 +134,7 @@ timeit group_per_month = df.groupby(
 *vaex*
 
 It is able to aggregate faster in all cases by parallelising the operation and making use of
-all available cores where as Gnocchi treats the entire series using a single thread. Vaex does
+all available cores where as Gnocchi treats the entire series using a single thread. vaex does
 this while providing a more functional interface.
 
 Additionally, vaex required ~0.8GB of memory to perform the aggregation (solely attributed to
