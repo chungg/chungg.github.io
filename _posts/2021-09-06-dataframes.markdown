@@ -5,7 +5,7 @@ date:   2021-09-06 00:00:00 -0500
 tags: arrow pandas polars vaex
 ---
 
-Following up on [my look into Vaex](2021-06-07-vaex.markdown) as an alternative to Pandas for
+Following up on [my look into Vaex](vaex) as an alternative to Pandas for
 building Dataframes/Tables in Python, this post will look at two more Dataframe solutions.
 [Polars](https://github.com/pola-rs/polars) is a relatively new solution built on Rust and
 [Arrow](https://arrow.apache.org/docs/index.html) with the eye-catching title of
@@ -259,7 +259,8 @@ use all cores but only one would actually be used fully.
 28.4 ms ± 423 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 ```
 
-## single column, multiple conditions - small resultset (75105 rows, ~5% of table)                                     ```python
+## single column, multiple conditions - small resultset (75105 rows, ~5% of table)
+```python
 %timeit df[(df['Group1'] == 'AAA') | (df['Group1'] == 'BBB')]
 116 ms ± 1.15 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
@@ -362,7 +363,8 @@ https://issues.apache.org/jira/browse/ARROW-12540
 %timeit df.to_parquet('/tmp/test.parquet')
 1.34 s ± 89 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
-%timeit pa.parquet.write_table(df, '/tmp/test.parquet')                                                                1.29 s ± 16.4 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+%timeit pa.parquet.write_table(df, '/tmp/test.parquet')
+1.29 s ± 16.4 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 %timeit df.export_parquet('/tmp/test.parquet')
 2.05 s ± 24.6 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
