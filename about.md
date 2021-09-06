@@ -9,7 +9,7 @@ by others by googling said code i don't understand; and reply to queries
 regarding my poorly written code by googling afore-metioned code in an
 attempt to figure out my beautiful mind.
 
-i'm currently an engineer learning to learn. previously, i worked on
+i'm currently an engineer at [CPPIB](https://www.cppinvestments.com/). previously, i worked on
 financial data at d1g1t and on the cloud at Huawei, Red Hat, eNovance, and IBM.
 i'm currently helping build [Gnocchi](http://gnocchi.xyz), an infinitely
 scalable, time-series database.

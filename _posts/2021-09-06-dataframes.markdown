@@ -353,10 +353,10 @@ https://issues.apache.org/jira/browse/ARROW-12540
 
 %timeit df.export_csv('/tmp/test.csv')
 23.1 s ± 563 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+```
 
 ## parquet
 ```python
-# pandas
 %timeit df.to_parquet('/tmp/test.parquet')
 2.21 s ± 52.2 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
