@@ -29,7 +29,7 @@ differ depending on CPU/disk and impact of virtualisation::
 - i5 laptop, 4 CPU, 16GB of memory
 - pandas==1.3.2
 - polars==0.9.3
-- pyarrow=5..0
+- pyarrow==5.0.0
 - vaex==4.4.0
 
 In all test cases below, the timings shown for each case show the action performed in the following
