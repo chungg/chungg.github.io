@@ -403,3 +403,7 @@ a potential alternative if you already have Pandas-like code.
 
 If you are memory constrained, Vaex is the only solution which by default lazy loads data but you
 can also conserve memory using Polars and Arrow by explicitly selecting columns.
+
+**Ultimately, regardless of the dataframe library chosen, storing tabular data in a binary format
+like Parquet will net the biggest performance gains as serialisation represents the vast majority
+of time spent when processing data** 
