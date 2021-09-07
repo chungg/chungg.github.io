@@ -6,14 +6,14 @@ tags: arrow pandas polars vaex
 ---
 
 Following up on [my look into Vaex](vaex) as an alternative to Pandas for
-building Dataframes/Tables in Python, this post will look at two more Dataframe solutions.
+building dataframes/tables in Python, this post will look at two more dataframe solutions.
 [Polars](https://github.com/pola-rs/polars) is a relatively new solution built on Rust and
 [Arrow](https://arrow.apache.org/docs/index.html) with the eye-catching title of
 [*I wrote one of the fastest DataFrame libraries*](https://www.ritchievink.com/blog/2021/02/28/i-wrote-one-of-the-fastest-dataframe-libraries/).
 This post will also take a look at the underlying technology Polars is based on and whether
 directly using Arrow is a good idea.
 
-Each of the Dataframe solutions have various use cases that may or may not overlap with another
+Each of the dataframe solutions have various use cases that may or may not overlap with another
 solution; Polars possible offers memory protection while Vaex targets memory usage. This is in no
 way a recommendation for one over another but rather how each performs in a basic workflow. This
 post also doesn't consider distributed dataframes like Dask and Spark as quite frankly i've
@@ -395,7 +395,7 @@ Writing to disk in csv, Polars performs markedly better than Pandas and Vaex but
 a binary file, all libraries perform similarly.
 
 
-# Conclusion
+# conclusion
 
 Arrow offers a small, performant solution for handling dataframes in Python. That said, its syntax
 is significantly different from Pandas and NumPY, which Polars and Vaex mimic, so Polars might be

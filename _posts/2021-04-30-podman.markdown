@@ -119,5 +119,5 @@ And the end result of this:
 ![podman htop]({{ "/images/podman/podman-htop.jpg" | absolute_url }})
 *podman memory usage on startup*
 
-So is it worth switching if you're use case is to create a dev environment of 3 databases? No.
+So is it worth switching if your use case is to create a dev environment of 3 databases? No.
 But since you may not have a choice, it's also not terrible. 
