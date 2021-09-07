@@ -14,7 +14,7 @@ This post will also take a look at the underlying technology Polars is based on 
 directly using Arrow is a good idea.
 
 Each of the dataframe solutions have various use cases that may or may not overlap with another
-solution; Polars possible offers memory protection while Vaex targets memory usage. This is in no
+solution; Polars possibly offers memory protection while Vaex targets memory usage. This is in no
 way a recommendation for one over another but rather how each performs in a basic workflow. This
 post also doesn't consider distributed dataframes like Dask and Spark as quite frankly i've
 never faced a scenario where i dealt with datasets that were 50GB+ that were not just unfiltered
@@ -143,7 +143,7 @@ When loading csv files, both Polars and PyArrow seem to saturate all cores.
 ```
 
 ![read]({{ "/images/df/df-read.png" | absolute_url }})
-*read*
+*read performance (lower is better)*
 
 When loading parquet files, all libraries used multiple cores to load. Vaex is lazy loaded
 which is why its load time is so much quicker compared to the others. It should also be noted,
@@ -232,7 +232,7 @@ use all cores but only one would actually be used fully.
 ```
 
 ![agg]({{ "/images/df/df-agg.png" | absolute_url }})
-*aggregate*
+*aggregate performance (lower is better)*
 
 I've removed Vaex from the chart as its performance is magnitudes slower than the others and
 would hide any differences. In most cases, Arrow performs the quickest but there are scenarios
@@ -350,7 +350,7 @@ where Pandas and/or Polars performs comparably.
 ```
 
 ![filter]({{ "/images/df/df-filter.png" | absolute_url }})
-*filter*
+*filter performance (lower is better)*
 
 In general, Arrow and Polars perform comparably when the result set is a small subset of the
 original table. When the result set is comparable to the original in size, Vaex performs the best
@@ -389,7 +389,7 @@ while Arrow comes second.
 ```
 
 ![write]({{ "/images/df/df-write.png" | absolute_url }})
-*write*
+*write performance (lower is better)*
 
 Writing to disk in csv, Polars performs markedly better than Pandas and Vaex but when writing as
 a binary file, all libraries perform similarly.
