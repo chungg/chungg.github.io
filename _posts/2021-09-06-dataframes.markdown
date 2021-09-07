@@ -141,6 +141,10 @@ When loading csv files, both Polars and PyArrow seem to saturate all cores.
 %timeit df = vaex.open('/tmp/test.parquet')
 2.43 ms ± 44.4 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 ```
+
+![read]({{ "/images/df/df-read.png" | absolute_url }})
+*read*
+
 When loading parquet files, all libraries used multiple cores to load. Vaex is lazy loaded
 which is why its load time is so much quicker compared to the others. It should also be noted,
 that you can filter on load, which reduces memory requirements and the need for distributed
@@ -226,6 +230,13 @@ use all cores but only one would actually be used fully.
 %timeit df['Metric1'].std()
 558 ms ± 15.7 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 ```
+
+![agg]({{ "/images/df/df-agg.png" | absolute_url }})
+*aggregate*
+
+I've removed Vaex from the chart as its performance is magnitudes slower than the others and
+would hide any differences. In most cases, Arrow performs the quickest but there are scenarios
+where Pandas and/or Polars performs comparably.
 
 
 # filter
@@ -338,6 +349,12 @@ use all cores but only one would actually be used fully.
 81 ms ± 1.68 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 ```
 
+![filter]({{ "/images/df/df-filter.png" | absolute_url }})
+*filter*
+
+In general, Arrow and Polars perform comparably when the result set is a small subset of the
+original table. When the result set is comparable to the original in size, Vaex performs the best
+while Arrow comes second.
 
 # write
 
@@ -349,7 +366,8 @@ use all cores but only one would actually be used fully.
 %timeit df.to_csv('/tmp/test.csv')
 3.45 s ± 202 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
-https://issues.apache.org/jira/browse/ARROW-12540
+# pyarrow fails to write csv
+# https://issues.apache.org/jira/browse/ARROW-12540
 
 %timeit df.export_csv('/tmp/test.csv')
 23.1 s ± 563 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
@@ -369,3 +387,19 @@ https://issues.apache.org/jira/browse/ARROW-12540
 %timeit df.export_parquet('/tmp/test.parquet')
 2.05 s ± 24.6 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 ```
+
+![write]({{ "/images/df/df-write.png" | absolute_url }})
+*write*
+
+Writing to disk in csv, Polars performs markedly better than Pandas and Vaex but when writing as
+a binary file, all libraries perform similarly.
+
+
+# Conclusion
+
+Arrow offers a small, performant solution for handling dataframes in Python. That said, its syntax
+is significantly different from Pandas and NumPY, which Polars and Vaex mimic, so Polars might be
+a potential alternative if you already have Pandas-like code.
+
+If you are memory constrained, Vaex is the only solution which by default lazy loads data but you
+can also conserve memory using Polars and Arrow by explicitly selecting columns.
