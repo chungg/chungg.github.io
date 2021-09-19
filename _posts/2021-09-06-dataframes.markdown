@@ -432,6 +432,8 @@ so there is probably a component of the operation that is lazily evaluated.
 # pyarrow fails to write csv
 # https://issues.apache.org/jira/browse/ARROW-12540
 
+# datatable does not seem to offer ability to write
+
 %timeit df.export_csv('/tmp/test.csv')
 23.1 s ± 563 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 ```
@@ -446,6 +448,8 @@ so there is probably a component of the operation that is lazily evaluated.
 
 %timeit pa.parquet.write_table(df, '/tmp/test.parquet')
 1.29 s ± 16.4 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+# datatable does not seem to offer ability to write
 
 %timeit df.export_parquet('/tmp/test.parquet')
 2.05 s ± 24.6 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
