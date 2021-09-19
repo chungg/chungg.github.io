@@ -2,16 +2,19 @@
 layout: post
 title:  "non-distributed dataframe shootout"
 date:   2021-09-06 00:00:00 -0500
-tags: arrow pandas polars vaex
+tags: arrow datatable pandas polars vaex
 ---
 
 Following up on [my look into Vaex](vaex) as an alternative to Pandas for
-building dataframes/tables in Python, this post will look at two more dataframe solutions.
+building dataframes/tables in Python, this post will look at three more dataframe solutions.
 [Polars](https://github.com/pola-rs/polars) is a relatively new solution built on Rust and
 [Arrow](https://arrow.apache.org/docs/index.html) with the eye-catching title of
 [*I wrote one of the fastest DataFrame libraries*](https://www.ritchievink.com/blog/2021/02/28/i-wrote-one-of-the-fastest-dataframe-libraries/).
 This post will also take a look at the underlying technology Polars is based on and whether
-directly using Arrow is a good idea.
+directly using Arrow is a good idea. Lastly, these dataframe solutions will be compared with
+[datatable](https://github.com/h2oai/datatable) which is a solution based on the
+[R implementation](https://github.com/Rdatatable/data.table) except it is written in C++ rather
+than C.
 
 Each of the dataframe solutions have various use cases that may or may not overlap with another
 solution; Polars possibly offers memory protection while Vaex targets memory usage. This is in no
@@ -27,9 +30,11 @@ The following is the configuration the benchmarks were tested against. The absol
 differ depending on CPU/disk and impact of virtualisation::
 - Debian 10 in WSL2
 - i5 laptop, 4 CPU, 16GB of memory
+- Python 3.9.7
 - pandas==1.3.2
 - polars==0.9.3
 - pyarrow==5.0.0
+- datatable==1.0.0
 - vaex==4.4.0
 
 In all test cases below, the timings shown for each case show the action performed in the following
@@ -37,7 +42,8 @@ order:
 1. Pandas
 2. Polars
 3. PyArrow
-4. Vaex
+4. datatable
+5. Vaex
 
 
 # data
@@ -99,11 +105,23 @@ This is a crude test but to gauge memory footprint of each solution, i'm just im
 package and noting the affect it has on resident memory in htop.
 
 ```python
-import pandas   # ~69MB
-import polars   # ~79MB
-import pyarrow  # ~44MB
-import vaex     # ~110MB
+import pandas     # ~69MB
+import polars     # ~79MB
+import pyarrow    # ~44MB
+import datatable  # ~6MB
+import vaex       # ~110MB
 ```
+![library-memory]({{ "/images/df/df-lib-memory.png" | absolute_url }})
+*dataframe library memory footprint*
+
+To capture how much memory each library consumes to represent a dataframe, i've again
+captured the delta between the resident memory before and after reading the csv file. This doesn't
+necessarily reflect exactly how much memory each solution needs as Pandas and Arrow both seem
+to use a few hundred megabytes more than what it eventually settled at and what is shown in the
+chart below.
+
+![df-memory]({{ "/images/df/df-memory.png" | absolute_url }})
+*dataframe memory footprint*
 
 # read
 
@@ -121,11 +139,15 @@ import vaex     # ~110MB
 %timeit pa.csv.read_csv('/tmp/test.csv')
 589 ms ± 19.1 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
+# datatable
+%timeit dt.fread('/tmp/test.csv')
+1.36 s ± 101 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
 # vaex
 %timeit vaex.open('/tmp/test.csv')
 10.1 s ± 895 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 ```
-When loading csv files, both Polars and PyArrow seem to saturate all cores.
+When loading csv files, Polars, PyArrow, and datatable seem to saturate all cores.
 
 ## parquet
 ```python
@@ -137,6 +159,10 @@ When loading csv files, both Polars and PyArrow seem to saturate all cores.
 
 %timeit pa.parquet.read_table('/tmp/test.parquet')
 347 ms ± 14.3 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+# datatable does not seem to read parquet files. Solution appears to be something like:
+%timeit dt.Frame(pq.read_table('/tmp/test.parquet').to_pandas())
+2.69 s ± 108 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 %timeit df = vaex.open('/tmp/test.parquet')
 2.43 ms ± 44.4 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
@@ -153,9 +179,9 @@ dataframe solutions.
 
 # aggregation
 
-In all cases below, Pandas and PyArrow did not seem to use multiple cores to compute. For Polars,
-in some cases it seemed to saturate all cores and in others, only one. For Vaex, it appeared to
-use all cores but only one would actually be used fully.
+In all cases below, Pandas and PyArrow did not seem to use multiple cores to compute. For Polars
+and datatable, in some cases it seemed to saturate all cores and in others, only one. For Vaex,
+it appeared to use all cores but only one would actually be used fully.
 
 ## mean
 ```python
@@ -167,6 +193,9 @@ use all cores but only one would actually be used fully.
 
 %timeit pa.compute.mean(df['Metric1'])
 770 µs ± 26.4 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+
+%timeit df[:, 'Metric1'].mean()
+2.26 µs ± 108 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
 
 %timeit df['Metric1'].mean()
 351 ms ± 6.16 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
@@ -183,6 +212,9 @@ use all cores but only one would actually be used fully.
 %timeit pa.compute.quantile(df['Metric1'])
 13.4 ms ± 644 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 
+%timeit df[:, dt.median(f['Metric1'])]  # appeared to be multicore
+38.7 ms ± 1.96 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+
 # Not supported in Vaex
 ```
 
@@ -196,6 +228,9 @@ use all cores but only one would actually be used fully.
 
 %timeit df['Group1'].value_counts()
 11.8 ms ± 267 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+
+%timeit df[:, dt.count(f['Group1']), dt.by('Group1')]  # appeared to be multicore
+93.3 ms ± 8.9 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 %timeit df['Group1'].value_counts()
 132 ms ± 4.4 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
@@ -212,6 +247,9 @@ use all cores but only one would actually be used fully.
 %timeit pa.compute.min_max(df['Metric1'])
 4.4 ms ± 107 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 
+%timeit df[:, 'Metric1'].max()
+2.42 µs ± 108 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+
 %timeit df['Metric1'].max()
 178 ms ± 2.76 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 ```
@@ -227,6 +265,9 @@ use all cores but only one would actually be used fully.
 %timeit pa.compute.stddev(df['Metric1'])
 1.66 ms ± 22.6 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
+%timeit df[:, 'Metric1'].sd()
+2.33 µs ± 143 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+
 %timeit df['Metric1'].std()
 558 ms ± 15.7 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 ```
@@ -235,8 +276,10 @@ use all cores but only one would actually be used fully.
 *aggregate performance (lower is better)*
 
 I've removed Vaex from the chart as its performance is magnitudes slower than the others and
-would hide any differences. In most cases, Arrow performs the quickest but there are scenarios
-where Pandas and/or Polars performs comparably.
+would hide any differences. datatable performs much faster than the other libraries in some cases
+but at a speed that makes me think that the aggregation is precomputed and is effectively doing
+a lookup  when the aggregation is requested. When aggregations do utilise the CPU, in most cases,
+Arrow performs the quickest but there are scenarios where Pandas and/or Polars performs comparably.
 
 
 # filter
@@ -250,6 +293,9 @@ where Pandas and/or Polars performs comparably.
 
 %timeit df.filter(pa.compute.equal(df['Group1'], 'AAA'))
 22.5 ms ± 483 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+
+%timeit df[f['Group1'] == 'AAA', :]
+38 ms ± 2.32 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 %timeit df[df['Group1'] == 'AAA']
 29 ms ± 999 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
@@ -265,6 +311,9 @@ where Pandas and/or Polars performs comparably.
 
 %timeit df.filter(pa.compute.equal(df['Group1'], 'CCC'))
 150 ms ± 7.82 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+%timeit df[f['Group1'] == 'BBB', :]
+40.5 ms ± 1.14 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 %timeit df[df['Group1'] == 'CCC']
 28.4 ms ± 423 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
@@ -282,6 +331,9 @@ where Pandas and/or Polars performs comparably.
                                  pa.compute.equal(df['Group1'], 'BBB')))
 35.6 ms ± 638 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
+%timeit df[(f['Group1'] == 'AAA') | (f['Group1'] == 'CCC'), :]
+62.3 ms ± 1.41 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+
 %timeit df[(df['Group1'] == 'AAA') | (df['Group1'] == 'BBB')]
 87.7 ms ± 1.65 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 ```
@@ -298,6 +350,9 @@ where Pandas and/or Polars performs comparably.
                                  pa.compute.equal(df['Group1'], 'BBB')))
 154 ms ± 8.93 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
+%timeit df[(f['Group1'] == 'BBB') | (f['Group1'] == 'CCC'), :]
+56.1 ms ± 2.37 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+
 %timeit df[(df['Group1'] == 'CCC') | (df['Group1'] == 'BBB')]
 86.1 ms ± 1.01 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 ```
@@ -312,6 +367,8 @@ where Pandas and/or Polars performs comparably.
 
 %timeit df.filter(pa.compute.is_in(df['Group1'], value_set=pa.array(['AAA', 'BBB'])))
 33.8 ms ± 990 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+
+# not applicable in datatable, need to chain with or
 
 %timeit df[df['Group1'].isin(['AAA', 'BBB'])]
 30.6 ms ± 634 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
@@ -329,6 +386,9 @@ where Pandas and/or Polars performs comparably.
                                   pa.compute.equal(df['Group2'], 'Y')))
 12.7 ms ± 133 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 
+%timeit df[(f['Group1'] == 'AAA') & (f['Group2'] == 'Y'), :]
+39.2 ms ± 1.09 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+
 %timeit df[(df['Group1'] == 'AAA') & (df['Group2'] == 'Y')]
 80.3 ms ± 2.08 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 ```
@@ -345,6 +405,9 @@ where Pandas and/or Polars performs comparably.
                                   pa.compute.equal(df['Group2'], 'N')))
 150 ms ± 18.6 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
+%timeit df[(f['Group1'] == 'BBB') & (f['Group2'] == 'N'), :]
+56.5 ms ± 5.06 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+
 %timeit df[(df['Group1'] == 'CCC') & (df['Group2'] == 'N')]
 81 ms ± 1.68 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 ```
@@ -353,8 +416,8 @@ where Pandas and/or Polars performs comparably.
 *filter performance (lower is better)*
 
 In general, Arrow and Polars perform comparably when the result set is a small subset of the
-original table. When the result set is comparable to the original in size, Vaex performs the best
-while Arrow comes second.
+original table. Vaex and datatable perform similarly regardless of the size of the result set
+so there is probably a component of the operation that is lazily evaluated.
 
 # write
 
@@ -397,13 +460,20 @@ a binary file, all libraries perform similarly.
 
 # conclusion
 
-Arrow offers a small, performant solution for handling dataframes in Python. That said, its syntax
+Arrow offers a small, performant solution for handling dataframes in Python. It also visually,
+did not seem to saturate all the cores for many of the tasks which may allow for better
+parallelisation if where you run the computation is not memory constrained. That said, its syntax
 is significantly different from Pandas and NumPY, which Polars and Vaex mimic, so Polars might be
 a potential alternative if you already have Pandas-like code.
 
 If you are memory constrained, Vaex is the only solution which by default lazy loads data but you
-can also conserve memory using Polars and Arrow by explicitly selecting columns.
+can also conserve memory using Polars and Arrow by explicitly selecting columns which also improves
+read performance. datatable does a good job of memory usage if you blindly want to load the entire
+dataset.
 
 **Ultimately, regardless of the dataframe library chosen, storing tabular data in a binary format
 like Parquet will net the biggest performance gains as serialisation represents the vast majority
 of time spent when processing data** 
+
+# revisions
+- 2021-09-21: include datatable library
