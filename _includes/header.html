@@ -1,17 +1,17 @@
-<aside class="logo" style="margin: 0 auto 15px">
+<aside class="logo">
 
-	{% if page.url == '/index.html' or page.url == '/' %}
-		{% assign link = '/about' %}
-		{% assign prompt = 'About the Author' %}
-	{% else %}
-		{% assign link = '/' %}
-		{% assign prompt = 'Back to Home' %}
-	{% endif %}
+    {% if page.url == '/index.html' or page.url == '/' %}
+        {% assign link = '/about' %}
+        {% assign prompt = 'About the Author' %}
+    {% else %}
+        {% assign link = '/' %}
+        {% assign prompt = 'Back to Home' %}
+    {% endif %}
 
-	<a href="{{ link | prepend: site.baseurl }}">
-		<img src="../images/profile.jpg" class="gravatar">
-	</a>
-	<span class="logo-prompt">{{ prompt }}</span>
+    <a href="{{ link | prepend: site.baseurl | prepend: site.url }}">
+        <img src="../images/profile.jpg" alt="" class="logo-avatar">
+    </a>
+    <span class="logo-prompt code">{{ prompt }}</span>
 </aside>
 <aside style="text-align: center; max-width: 590px; margin: 0 auto 35px; font-size: 0.8rem;">
 	<span class="block">
