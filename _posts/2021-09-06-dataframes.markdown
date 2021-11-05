@@ -2,7 +2,7 @@
 layout: post
 title:  "non-distributed dataframe shootout"
 date:   2021-09-06 00:00:00 -0500
-tags: arrow datatable pandas polars vaex
+tags: arrow datatable pandas polars vaex feather parquet
 ---
 
 Following up on [my look into Vaex](vaex) as an alternative to Pandas for
@@ -95,9 +95,10 @@ Metric9: double
 Group15: string
 Metric10: double
 ```
-It is based off a real dataset with 1219467 rows and 44 columns. As a csv, it is 465MB
-and as parquet, it is 35MB.
-
+It is based off a real dataset with 1219467 rows and 44 columns. As:
+- csv, it is 465MB
+- Parquet, it is 35MB.
+- feather (Arrow IPC), it is 164MB (with default LZ4 compression)
 
 # memory
 
@@ -160,7 +161,7 @@ When loading csv files, Polars, PyArrow, and datatable seem to saturate all core
 %timeit pa.parquet.read_table('/tmp/test.parquet')
 347 ms ± 14.3 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
-# datatable does not seem to read parquet files. Solution appears to be something like:
+# datatable does not support parquet files. Solution appears to be something like:
 %timeit dt.Frame(pq.read_table('/tmp/test.parquet').to_pandas())
 2.69 s ± 108 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
@@ -168,12 +169,32 @@ When loading csv files, Polars, PyArrow, and datatable seem to saturate all core
 2.43 ms ± 44.4 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 ```
 
+## arrow ipc
+```python
+%timeit pd.read_feather('/tmp/test.feather')
+766 ms ± 31.3 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+%timeit pl.read_ipc('/tmp/test.feather')
+476 ms ± 85.8 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+%timeit pa.read_table('/tmp/test.feather')
+146 ms ± 6.57 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+
+# datatable does not support arrow files. Solution appears to be something like below
+# but it doesn't seem to generate correctly:
+%timeit dt.Frame(pd.read_feather('/tmp/test.feather'))
+2.15 s ± 41.1 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+%timeit vaex.open('/tmp/test.feather')
+189 ms ± 39.5 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+```
+
 ![read]({{ "/images/df/df-read.png" | absolute_url }})
 *read performance (lower is better)*
 
-When loading parquet files, all libraries used multiple cores to load. Vaex is lazy loaded
-which is why its load time is so much quicker compared to the others. It should also be noted,
-that you can filter on load, which reduces memory requirements and the need for distributed
+When loading Feather and Parquet files, all libraries used multiple cores to load. Vaex is lazy
+loaded which is why its load time is so much quicker compared to the others. It should also be
+noted, that you can filter on load, which reduces memory requirements and the need for distributed
 dataframe solutions.
 
 
@@ -429,8 +450,9 @@ so there is probably a component of the operation that is lazily evaluated.
 %timeit df.to_csv('/tmp/test.csv')
 3.45 s ± 202 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
-# pyarrow fails to write csv
-# https://issues.apache.org/jira/browse/ARROW-12540
+# pyarrow using 6.0.0 to avoid https://issues.apache.org/jira/browse/ARROW-12540
+%timeit pa.csv.write_csv(df, '/tmp/test.csv')
+2.5 s ± 249 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
 # datatable does not seem to offer ability to write
 
@@ -455,6 +477,24 @@ so there is probably a component of the operation that is lazily evaluated.
 2.05 s ± 24.6 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 ```
 
+## arrow ipc
+```python
+%timeit df.to_feather('/tmp/test.feather')
+1.26 s ± 87.5 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+# polars appears to write an uncompressed, possibly v1, arrow file
+%timeit df.to_ipc('/tmp/test.feather')
+2.68 s ± 487 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+%timeit pa.feather.write_feather(df, '/tmp/test.feather')
+294 ms ± 9.52 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+
+# datatable does not seem to offer ability to write
+
+%timeit df.export_feather('/tmp/test.feather')
+294 ms ± 8.55 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+```
+
 ![write]({{ "/images/df/df-write.png" | absolute_url }})
 *write performance (lower is better)*
 
@@ -476,8 +516,10 @@ read performance. datatable does a good job of memory usage if you blindly want 
 dataset.
 
 **Ultimately, regardless of the dataframe library chosen, storing tabular data in a binary format
-like Parquet will net the biggest performance gains as serialisation represents the vast majority
-of time spent when processing data** 
+like Arrow IPC or Parquet will net the biggest performance gains as serialisation represents the
+vast majority of time spent when processing data. Arrow IPC generally has better performance but
+is currently less supported by third party services**
 
 # revisions
 - 2021-09-21: include datatable library
+- 2021-11-05: include feather/arrow ipc file format
