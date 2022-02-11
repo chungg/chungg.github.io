@@ -25,16 +25,9 @@ mathjax:            true  # enables support for mathjax - set to false to disabl
 highlighter:        rouge
 markdown:           kramdown
 kramdown:
-  input:          GFM
-  syntax_highlighter: rouge
-  syntax_highlighter_opts:
-    css_class: 'highlight'
-    span:
-      line_numbers: false
-    block:
-      line_numbers: true
+    input:          GFM
 sass:
-  style:          :compressed
+    style:          :compressed
 
 # Other Params
 include:            [ "robots.txt" ]
