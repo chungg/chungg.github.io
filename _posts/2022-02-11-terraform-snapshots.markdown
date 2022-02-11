@@ -66,7 +66,7 @@ module "rds-aurora" {
 
   name           = each.key
   engine         = "aurora-postgresql"
-  engine_version = "13
+  engine_version = "13"
   instance_class = var.rds_size
   instances = {
     one   = {}
@@ -116,7 +116,9 @@ resource "aws_route53_record" "db-reader" {
 
 There are many input variables missing above but essentially, it leverages `for_each`
 functionality and allows the ability to specify the clusters that are deployed. It also uses
-Route53 names to decide which cluster is accessible.
+Route53 names to decide which cluster is accessible. The key variables would be `var.cluster_map`,
+`var.active_clsuter`, and `var.pw`. `var.pw` is not critical but the module will end up
+creating a new password each time so it can get annoying having to lookup new password each time.
 
 The workflow is as follows:
 
