@@ -28,5 +28,8 @@ don't
   - note, you should update `~/.config/wayfire.ini` now.
 - stock up on tea/coffee if you're using rust
 - python is fine
-  - not entirely sure why but i had to include PYTHONIOENCODING=utf-8 for pipenv to work
+  - ~~not entirely sure why but i had to include PYTHONIOENCODING=utf-8 for pipenv to work~~ it seems i installed the non-utf8 version of en_CA. lesson learned, don't be patriotic. note, i had to reinstall postgresql (because it was easier than figuring out how to change it to utf-8)
   - i had to rename `/etc/_pip.conf` as the `https://www.piwheels.org/simple` would give conflicting packages.
+
+## revisions
+- 2023-11-08: update why i was getting encoding error and spell raspberry properly
