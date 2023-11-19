@@ -11,7 +11,7 @@ don't
 # why not?
 - after the case, SD/SSD drive, charger, etc.. it's marginally cheaper than a budget mini-pc
 - even with overclocking, it's slow
-  - slow as in, "a computer from 15 years ago with the 15 years of amount of fragmentation and limewire viruses" slow
+  - slow as in, "a computer from 15 years ago with the 15 years of fragmentation and limewire viruses" slow
 - ymmv with any distro that isn't Raspberry Pi OS. Fedora 38 took a long time to boot and the GUI didn't work
 - i'm assuming the second 4k60 HDMI port is in case the first one breaks because anything more than 1080p30 and you're noticably missing frames/stuttering.
 - workflow of queueing multiple sites or videos in tabs will test your patience
