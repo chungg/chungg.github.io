@@ -30,32 +30,32 @@ We'll test datasets corresponding to:
 - 1 year of data (~250 datapoints)
 - 10 years of data (~2500 datapoints)
 
-The benchmarks below are run using Python 3.11.2 and Rust 1.75.0 on a Raspberry Pi 4b :|
+The benchmarks below are run using Python 3.11.2 and Rust 1.75.0 on a Raspberry Pi 4b
 
 ## vanilla
 
 Computing this in pure Python, the Klinger indicator computation translates to:
 
 ```python
-    def py_vforce(h, l, c, v):
-        prevtrend = 99
-        prevdm = h[0] - l[0]
-        for n in range(1, len(h)):
-            trend = 1 if h[n] + l[n] + c[n] > h[n-1] + l[n-1] + c[n-1] else -1
-            dm = h[n] - l[n]
-            cm = prevcm + dm if trend == prevtrend else prevdm + dm
-            yield v[n] * 2 * ((dm / cm) - 1) * trend * 100
-            prevtrend = trend
-            prevdm = dm
-            prevcm = cm
+def py_vforce(h, l, c, v):
+    prevtrend = 99
+    prevdm = h[0] - l[0]
+    for n in range(1, len(h)):
+        trend = 1 if h[n] + l[n] + c[n] > h[n-1] + l[n-1] + c[n-1] else -1
+        dm = h[n] - l[n]
+        cm = prevcm + dm if trend == prevtrend else prevdm + dm
+        yield v[n] * 2 * ((dm / cm) - 1) * trend * 100
+        prevtrend = trend
+        prevdm = dm
+        prevcm = cm
 
 
-    def py_ewma(data, alpha):
-        if len(data) == 1:
-            return [data[0]]
-        else:
-            minus1 = py_ewma(data[:-1], alpha)
-            return minus1 + [(data[-1] * alpha) + (minus1[-1] * (1 - alpha))]
+def py_ewma(data, alpha):
+    if len(data) == 1:
+        return [data[0]]
+    else:
+        minus1 = py_ewma(data[:-1], alpha)
+        return minus1 + [(data[-1] * alpha) + (minus1[-1] * (1 - alpha))]
 ```
 
 As it aligns pretty neatly with how the computation is described, it's arguably easy to understand
@@ -103,33 +103,33 @@ but I also don't know what this means.
 One attempt at computing this in numpy yields:
 
 ```python
-    def np_vforce1(high, low, close, vol):
-        trend = high + low + close
-        trend = trend[1:] > trend[:-1]
-        # making assumption starts with new trend rather than lose another datapoint
-        trend_delta = np.concatenate(([False], trend[1:] == trend[:-1]))
-        
-        dm = high - low
-        cm = np.full_like(trend_delta, np.nan, dtype=float)
-        
-        # if trend != trend-1
-        cm[~trend_delta] = dm[:-1][~trend_delta] + dm[1:][~trend_delta]
-        
-        # if trend == trend-1 (dm part)
-        masked = np.ma.array(dm[1:].copy(), mask=~trend_delta, fill_value=np.nan)
-        masked[~trend_delta] = -np.diff(
-            np.concatenate(([0], np.cumsum(np.nan_to_num(masked))[~trend_delta])))
-        
-        # cm-1 part
-        mask = np.isnan(cm)
-        idx = np.where(~mask, np.arange(mask.shape[0]), 0)
-        
-        # cm-1 + dm
-        cm = cm[np.maximum.accumulate(idx)] + np.cumsum(masked)
+def np_vforce_og(high, low, close, vol):
+    trend = high + low + close
+    trend = trend[1:] > trend[:-1]
+    # making assumption starts with new trend rather than lose another datapoint
+    trend_delta = np.concatenate(([False], trend[1:] == trend[:-1]))
     
-        # normalise trend to +1/-1
-        trend = trend * 2 - 1
-        return vol[1:] * (2 * ((dm[1:] / cm) - 1)) * trend * 100
+    dm = high - low
+    cm = np.full_like(trend_delta, np.nan, dtype=float)
+    
+    # if trend != trend-1
+    cm[~trend_delta] = dm[:-1][~trend_delta] + dm[1:][~trend_delta]
+    
+    # if trend == trend-1 (dm part)
+    masked = np.ma.array(dm[1:].copy(), mask=~trend_delta, fill_value=np.nan)
+    masked[~trend_delta] = -np.diff(
+        np.concatenate(([0], np.cumsum(np.nan_to_num(masked))[~trend_delta])))
+    
+    # cm-1 part
+    mask = np.isnan(cm)
+    idx = np.where(~mask, np.arange(mask.shape[0]), 0)
+    
+    # cm-1 + dm
+    cm = cm[np.maximum.accumulate(idx)] + np.cumsum(masked)
+
+    # normalise trend to +1/-1
+    trend = trend * 2 - 1
+    return vol[1:] * (2 * ((dm[1:] / cm) - 1)) * trend * 100
 ```
 
 If you're unsure what is happening above, welcome to the club (and I wrote it). The comments were
@@ -142,47 +142,47 @@ as the Python solution. It also is slower than the Python solution and was not w
 Revisiting the numpy solution:
 
 ```python
-    def np_vforce(high, low, close, vol):
-        trend = high + low + close
-        trend = trend[1:] > trend[:-1]
-        # making assumption starts with new trend rather than lose another datapoint
-        trend_delta = np.concatenate(([False], trend[1:] == trend[:-1]))
-        # trend = np.r_[False, trend[1:] == trend[:-1]]
-        # trend = np.insert(trend[1:] == trend[:-1], 0, False)
-    
-        dm = high - low
-        cm = dm.copy()
-        # trend != trend-1
-        cm[1:][~trend_delta] += cm[:-1][~trend_delta]
-    
-        # trend == trend-1
-        # https://stackoverflow.com/questions/18196811/cumsum-reset-at-nan
-        cm_cumsum = np.zeros_like(cm)
-        cm_cumsum[:-1][trend_delta] = cm[:-1][trend_delta]
-        cm_cumsum[:-1][~trend_delta] -= np.diff(
-            np.concatenate(([0], np.cumsum(cm_cumsum)[:-1][~trend_delta])))
-        cm = np.cumsum(cm_cumsum)[:-1] + cm[1:]
-    
-        # normalise trend to +/-1
-        trend = trend * 2 - 1
-        return vol[1:] * (2 * ((dm[1:] / cm) - 1)) * trend * 100
-    
-    def ewma(data, window):
-        # https://stackoverflow.com/a/42926270
-        # https://stackoverflow.com/a/50275583
-        alpha = 2 / (window + 1.0)
-        alpha_rev = 1 - alpha
-        n = data.shape[0]
-    
-        pows = alpha_rev**(np.arange(n+1))
-    
-        scale_arr = 1 / pows[:-1]
-        offset = data[0] * pows[1:]
-        pw0 = alpha * alpha_rev**(n-1)
-    
-        cumsums = (data * pw0 * scale_arr).cumsum()
-        out = offset + cumsums * scale_arr[::-1]
-        return out
+def np_vforce(high, low, close, vol):
+    trend = high + low + close
+    trend = trend[1:] > trend[:-1]
+    # making assumption starts with new trend rather than lose another datapoint
+    trend_delta = np.concatenate(([False], trend[1:] == trend[:-1]))
+    # trend = np.r_[False, trend[1:] == trend[:-1]]
+    # trend = np.insert(trend[1:] == trend[:-1], 0, False)
+
+    dm = high - low
+    cm = dm.copy()
+    # trend != trend-1
+    cm[1:][~trend_delta] += cm[:-1][~trend_delta]
+
+    # trend == trend-1
+    # https://stackoverflow.com/questions/18196811/cumsum-reset-at-nan
+    cm_cumsum = np.zeros_like(cm)
+    cm_cumsum[:-1][trend_delta] = cm[:-1][trend_delta]
+    cm_cumsum[:-1][~trend_delta] -= np.diff(
+        np.concatenate(([0], np.cumsum(cm_cumsum)[:-1][~trend_delta])))
+    cm = np.cumsum(cm_cumsum)[:-1] + cm[1:]
+
+    # normalise trend to +/-1
+    trend = trend * 2 - 1
+    return vol[1:] * (2 * ((dm[1:] / cm) - 1)) * trend * 100
+
+def ewma(data, window):
+    # https://stackoverflow.com/a/42926270
+    # https://stackoverflow.com/a/50275583
+    alpha = 2 / (window + 1.0)
+    alpha_rev = 1 - alpha
+    n = data.shape[0]
+
+    pows = alpha_rev**(np.arange(n+1))
+
+    scale_arr = 1 / pows[:-1]
+    offset = data[0] * pows[1:]
+    pw0 = alpha * alpha_rev**(n-1)
+
+    cumsums = (data * pw0 * scale_arr).cumsum()
+    out = offset + cumsums * scale_arr[::-1]
+    return out
 ```
 
 This code results in:
@@ -218,66 +218,66 @@ regularly so the below I'm sure can be improved.
 In Rust:
 
 ```rust
-    use serde::{Deserialize, Serialize};
-    use std::fs;
-    use std::time::Instant;
+use serde::{Deserialize, Serialize};
+use std::fs;
+use std::time::Instant;
 
-    #[derive(Deserialize, Serialize, Debug)]
-    struct SecStats {
-        high: Vec<f64>,
-        low: Vec<f64>,
-        close: Vec<f64>,
-        volume: Vec<f64>,
+#[derive(Deserialize, Serialize, Debug)]
+struct SecStats {
+    high: Vec<f64>,
+    low: Vec<f64>,
+    close: Vec<f64>,
+    volume: Vec<f64>,
+}
+
+fn vforce(h: Vec<f64>, l: Vec<f64>, c: Vec<f64>, v: Vec<f64>) -> Vec<f64> {
+    let mut prevtrend: i8 = 99;
+    let mut prevdm: f64 = h[0] - l[0];
+    let mut prevcm: f64 = 0.0;
+    let mut result: Vec<f64> = Vec::new();
+    for i in 1..h.len() {
+        let trend: i8 = {
+            if h[i] + l[i] + c[i] > h[i - 1] + l[i - 1] + c[i - 1] {
+                1
+            } else {
+                -1
+            }
+        };
+        let dm: f64 = h[i] - l[i];
+        let cm: f64 = {
+            if trend == prevtrend {
+                prevcm + dm
+            } else {
+                prevdm + dm
+            }
+        };
+        result.push(v[i] * 2.0 * ((dm / cm) - 1.0) * trend as f64 * 100.0);
+        prevtrend = trend;
+        prevdm = dm;
+        prevcm = cm;
     }
-    
-    fn vforce(h: Vec<f64>, l: Vec<f64>, c: Vec<f64>, v: Vec<f64>) -> Vec<f64> {
-        let mut prevtrend: i8 = 99;
-        let mut prevdm: f64 = h[0] - l[0];
-        let mut prevcm: f64 = 0.0;
-        let mut result: Vec<f64> = Vec::new();
-        for i in 1..h.len() {
-            let trend: i8 = {
-                if h[i] + l[i] + c[i] > h[i - 1] + l[i - 1] + c[i - 1] {
-                    1
-                } else {
-                    -1
-                }
-            };
-            let dm: f64 = h[i] - l[i];
-            let cm: f64 = {
-                if trend == prevtrend {
-                    prevcm + dm
-                } else {
-                    prevdm + dm
-                }
-            };
-            result.push(v[i] * 2.0 * ((dm / cm) - 1.0) * trend as f64 * 100.0);
-            prevtrend = trend;
-            prevdm = dm;
-            prevcm = cm;
-        }
-        return result;
+    return result;
+}
+
+fn ewma(data: &[f64], alpha: f64) -> Vec<f64> {
+    if data.len() == 1 {
+        return vec![data[0]];
+    } else {
+        let mut minus1: Vec<f64> = ewma(&data[..data.len() - 1], alpha);
+        minus1.push((data.last().unwrap() * alpha) + (minus1.last().unwrap() * (1.0 - alpha)));
+        return minus1;
     }
-    
-    fn ewma(data: &[f64], alpha: f64) -> Vec<f64> {
-        if data.len() == 1 {
-            return vec![data[0]];
-        } else {
-            let mut minus1: Vec<f64> = ewma(&data[..data.len() - 1], alpha);
-            minus1.push((data.last().unwrap() * alpha) + (minus1.last().unwrap() * (1.0 - alpha)));
-            return minus1;
-        }
-    }
-    
-    fn main() {
-        let data = fs::read_to_string("./klinger.input").expect("Unable to read file");
-    
-        let stats: SecStats = serde_json::from_str(&data).expect("JSON does not have correct format.");
-    
-        let start = Instant::now();
-        vforce(stats.high, stats.low, stats.close, stats.volume);
-        println!("Time elapsed in fn is: {:?}", start.elapsed());
-    }
+}
+
+fn main() {
+    let data = fs::read_to_string("./klinger.input").expect("Unable to read file");
+
+    let stats: SecStats = serde_json::from_str(&data).expect("JSON does not have correct format.");
+
+    let start = Instant::now();
+    vforce(stats.high, stats.low, stats.close, stats.volume);
+    println!("Time elapsed in fn is: {:?}", start.elapsed());
+}
 ```
 
 Similar to the pure Python solution, it reads quite similarly to how it's described in the
