@@ -5,7 +5,7 @@ date:   2024-01-08 00:00:00 -0500
 tags: python rust performance
 ---
 
-*"<insert language here> is slow" - everybody*
+*"\<insert language here\> is slow" - everybody*
 
 Every developer has said this at some point. Sometimes accurately, sometimes to justify their code, but ultimately, does it even matter?
 
@@ -36,6 +36,7 @@ The benchmarks below are run using Python 3.11.2 and Rust 1.75.0 on a Raspberry 
 
 Computing this in pure Python, the Klinger indicator computation translates to:
 
+```python
     def py_vforce(h, l, c, v):
         prevtrend = 99
         prevdm = h[0] - l[0]
@@ -55,6 +56,7 @@ Computing this in pure Python, the Klinger indicator computation translates to:
         else:
             minus1 = py_ewma(data[:-1], alpha)
             return minus1 + [(data[-1] * alpha) + (minus1[-1] * (1 - alpha))]
+```
 
 As it aligns pretty neatly with how the computation is described, it's arguably easy to understand
 what the above code is doing (ignoring my lazy variable naming).
@@ -100,6 +102,7 @@ but I also don't know what this means.
 
 One attempt at computing this in numpy yields:
 
+```python
     def np_vforce1(high, low, close, vol):
         trend = high + low + close
         trend = trend[1:] > trend[:-1]
@@ -127,6 +130,7 @@ One attempt at computing this in numpy yields:
         # normalise trend to +1/-1
         trend = trend * 2 - 1
         return vol[1:] * (2 * ((dm[1:] / cm) - 1)) * trend * 100
+```
 
 If you're unsure what is happening above, welcome to the club (and I wrote it). The comments were
 added to help remember what each part is actually doing. With that said, it yields the same results
@@ -137,6 +141,7 @@ as the Python solution. It also is slower than the Python solution and was not w
 
 Revisiting the numpy solution:
 
+```python
     def np_vforce(high, low, close, vol):
         trend = high + low + close
         trend = trend[1:] > trend[:-1]
@@ -178,6 +183,7 @@ Revisiting the numpy solution:
         cumsums = (data * pw0 * scale_arr).cumsum()
         out = offset + cumsums * scale_arr[::-1]
         return out
+```
 
 This code results in:
 
@@ -206,11 +212,12 @@ language to improve performance.
 
 For this exercise, we'll choose Rust partly because it's the language where the answer to the
 question *"what does it do?"* is *"it's written in Rust"*. :P
-For the record, Rust is one of the few other languages I sort of know use but don't use it
+For the record, Rust is one of the few other languages I sort of know/use but don't use it
 regularly so the below I'm sure can be improved.
 
 In Rust:
 
+```rust
     use serde::{Deserialize, Serialize};
     use std::fs;
     use std::time::Instant;
@@ -271,6 +278,7 @@ In Rust:
         vforce(stats.high, stats.low, stats.close, stats.volume);
         println!("Time elapsed in fn is: {:?}", start.elapsed());
     }
+```
 
 Similar to the pure Python solution, it reads quite similarly to how it's described in the
 Investopedia page but instead of Python syntax, you have Rust.
