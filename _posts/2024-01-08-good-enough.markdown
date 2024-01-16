@@ -269,13 +269,32 @@ fn ewma(data: &[f64], alpha: f64) -> Vec<f64> {
     }
 }
 
+fn ewma(data: &[f64], alpha: f64) -> Vec<f64> {
+    // functional solution
+    data.iter()
+        .scan(None, |state, &x| {
+            if *state == None {
+                *state = Some(x);
+                *state
+            } else {
+                *state = Some(x * alpha + state.unwrap() * (1.0 - alpha));
+                *state
+            }
+        })
+        .collect::<Vec<f64>>()
+}
+
 fn main() {
     let data = fs::read_to_string("./klinger.input").expect("Unable to read file");
 
     let stats: SecStats = serde_json::from_str(&data).expect("JSON does not have correct format.");
 
     let start = Instant::now();
-    vforce(stats.high, stats.low, stats.close, stats.volume);
+    let vf = vforce(stats.high, stats.low, stats.close, stats.volume);
+    ewma(&vf, 2.0 / 35.0)
+        .iter()
+        .zip(ewma(&vf, 2.0 / 56.0).iter())
+        .map(|(x, y)| x - y).collect::<Vec<f64>>();
     println!("Time elapsed in fn is: {:?}", start.elapsed());
 }
 ```
@@ -294,17 +313,25 @@ The runtimes are as follows (i don't know how to do the timeit equivalent in Rus
     // factoring in ewma
     // 1 year
     ~213-223us. 215.238µs as median of 11 runs
+    // 1 year (functional)
+    ~114-119us. 116.813µs as median of 11 runs
     // 10 years
-    ~1.89ms-2.82ms, 2.345ms as median of 11 runs
+    ~1.89ms-2.82ms. 2.345ms as median of 11 runs
+    // 10 years (functional)
+    ~0.997-1.106ms. 1.040651ms as median of 11 runs
     
     // klinger 34/55
     // 1 year
     ~261-337us. 265.736µs as median of 11 runs
+    // 1 year (functional)
+    ~152-156us. 154.405us as median of 11 runs
     // 10 years
     ~2.57-4.76ms. 3.719ms as median of 11 runs
+    // 10 years (functional)
+    ~1.347-1.411ms. 1.378ms as median of 11 runs
 
 When dealing with small datasets, we've improved performance by 50-300% versus the numpy solution.
-With larger datasets, because the solution grows linearly, numpy performs 2x-3x better than Rust...
+With larger datasets, because the solution grows linearly, numpy can perform 2x-3x better than Rust...
 
 ## what have we done
 
@@ -321,3 +348,6 @@ improvement if computing over 1 year or 10 years. Relative to any other task the
 
 If this indicator is being run on millions of securities many times a day and used to trigger
 alerts, then maybe it's worth the optimisation.
+
+## revisions
+- 2024-01-16: add functional ewma solution for rust
