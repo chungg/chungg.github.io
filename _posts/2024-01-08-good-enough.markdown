@@ -307,31 +307,43 @@ The runtimes are as follows (i don't know how to do the timeit equivalent in Rus
     // vforce
     // 1 year
     ~77-120us. 78.758µs as median of 11 runs
+    // 1 year (optimised)
+    ~8.87-26.759us. 9.741us as median of 11 runs
     // 10 years
     ~796us-1.439ms. 1.04ms as median of 11 runs
+    // 10 years (optimised)
+    ~95-296us. 133.961us as median of 11 runs
     
     // factoring in ewma
     // 1 year
     ~213-223us. 215.238µs as median of 11 runs
     // 1 year (functional)
     ~114-119us. 116.813µs as median of 11 runs
+    // 1 year (functional+optimised)
+    ~12.223-19.407us. 13.592us as median of 11 runs
     // 10 years
     ~1.89ms-2.82ms. 2.345ms as median of 11 runs
     // 10 years (functional)
     ~0.997-1.106ms. 1.040651ms as median of 11 runs
+    // 10 years (functional+optimised)
+    ~127.59-321.181us. 216.386us as median of 11 runs
     
     // klinger 34/55
     // 1 year
     ~261-337us. 265.736µs as median of 11 runs
     // 1 year (functional)
     ~152-156us. 154.405us as median of 11 runs
+    // 1 year (functional+optimised)
+    ~15.093-38.833us. 18.111us as median of 11 runs
     // 10 years
     ~2.57-4.76ms. 3.719ms as median of 11 runs
     // 10 years (functional)
     ~1.347-1.411ms. 1.378ms as median of 11 runs
+    // 10 years (functional+optimised)
+    ~147.647-258.349us. 195.442us as median of 11 runs
 
-When dealing with small datasets, we've improved performance by 50-300% versus the numpy solution.
-With larger datasets, because the solution grows linearly, numpy can perform 2x-3x better than Rust...
+When dealing with small datasets, we've improved performance by 19-23x versus the numpy solution.
+With larger datasets, Rust performs 4-6x better than numpy.
 
 ## what have we done
 
@@ -340,7 +352,7 @@ We've also increased the cognitive load (apologies for the psychology pseudo-sci
 In some cases, it's quite minor. The Rust solution took marginally longer than Python for me
 while the numpy solution took significantly longer (even though i have more familiarity with numpy).
 
-The question is whether 200x performance is worth it. More accurately, is 200ms worth it?
+The question is whether 1200x performance is worth it. Alternatively, is 200ms worth it?
 
 If this indicator is triggered by a user, they will arguably never notice a 2x or even a 10000x
 improvement if computing over 1 year or 10 years. Relative to any other task they will do in a day, 
@@ -351,3 +363,4 @@ alerts, then maybe it's worth the optimisation.
 
 ## revisions
 - 2024-01-16: add functional ewma solution for rust
+- 2024-01-20: benchmark properly on optimised code
