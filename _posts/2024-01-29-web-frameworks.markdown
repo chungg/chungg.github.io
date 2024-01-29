@@ -150,8 +150,10 @@ the CPUs meaning we had ability to handle significantly more capacity.
 
 *apologies on screenshots, i use transparent terminal background because i'm a monster*
 
-![idle-stats]({{ "/images/webframe/idle-usage.png" | absolute_url }})
-*system usage when idle - ~560MB of memory*
+<figure>
+  <img src="{{site.url}}//images/webframe/idle-usage.png"></img>
+  <figcaption>system usage when idle - ~560MB of memory</figcaption>
+</figure>
 
 ![axum-stats]({{ "/images/webframe/axum-usage.png" | absolute_url }})
 *system usage when Axum handling requests to sales api - ~625MB of memory*
