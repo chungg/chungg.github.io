@@ -12,8 +12,10 @@ While searching for a Rust web framework for my next project, i came across a
 performance of existing web frameworks across many languages. Coming from python, a Rust framework
 should improve performance, or put another way, reduce resource requirements by up to 85x!
 
-![external-bench]({{ "/images/webframe/axum-flask.png" | absolute_url }})
-*Axum vs Flask benchmark*
+<figure>
+  <img src="{{site.url}}/images/webframe/axum-flask.png"/>
+  <figcaption>Axum vs Flask benchmark</figcaption>
+</figure>
 
 Since i'm porting a sample Flask app to Rust, here's how 85x translates to the reality.
 
@@ -125,20 +127,26 @@ none that return in 85x improvements**.
 Testing the *random* api endpoint which effectively just generates a list of random numbers,
 **Axum performed ~20% better, averaging 0.8ms faster response time per request**.
 
-![random-api]({{ "/images/webframe/api-random.png" | absolute_url }})
-*Time to handle 1000 requests - random data endpoint*
+<figure>
+  <img src="{{site.url}}/images/webframe/api-random.png"/>
+  <figcaption>Time to handle 1000 requests - random data endpoint</figcaption>
+</figure>
 
 Testing the *vehicle sales* api endpoint which reads and processes a small csv,
 **Axum performed ~4x better, averaging 12ms faster response time per request**.
 
-![random-api]({{ "/images/webframe/api-sales.png" | absolute_url }})
-*Time to handle 1000 requests - sales data endpoint*
+<figure>
+  <img src="{{site.url}}/images/webframe/api-sales.png"/>
+  <figcaption>Time to handle 1000 requests - sales data endpoint</figcaption>
+</figure>
 
 Testing the *financial* api endpoint which calls Yahoo api,
 **Axum performed ~5x worse.** I imagine this is due to the usage of synchronous calls.
 
-![random-api]({{ "/images/webframe/api-yahoo.png" | absolute_url }})
-*Time to handle 100 requests - yahoo data endpoint*
+<figure>
+  <img src="{{site.url}}/images/webframe/api-yahoo.png"/>
+  <figcaption>Time to handle 100 requests - yahoo data endpoint</figcaption>
+</figure>
 
 ### system resources
 
@@ -151,15 +159,19 @@ the CPUs meaning we had ability to handle significantly more capacity.
 *apologies on screenshots, i use transparent terminal background because i'm a monster*
 
 <figure>
-  <img src="{{site.url}}//images/webframe/idle-usage.png"></img>
+  <img src="{{site.url}}/images/webframe/idle-usage.png"/>
   <figcaption>system usage when idle - ~560MB of memory</figcaption>
 </figure>
 
-![axum-stats]({{ "/images/webframe/axum-usage.png" | absolute_url }})
-*system usage when Axum handling requests to sales api - ~625MB of memory*
+<figure>
+  <img src="{{site.url}}/images/webframe/axum-usage.png"/>
+  <figcaption>system usage when Axum handling requests to sales api - ~625MB of memory</figcaption>
+</figure>
 
-![flask-stats]({{ "/images/webframe/flask-usage.png" | absolute_url }})
-*system usage when Flask handling requests to sales api - ~1.1GB of memory*
+<figure>
+  <img src="{{site.url}}/images/webframe/flask-usage.png"/>
+  <figcaption>system usage when Flask handling requests to sales api - ~1.1GB of memory</figcaption>
+</figure>
 
 ## side notes
 
@@ -172,5 +184,7 @@ the CPUs meaning we had ability to handle significantly more capacity.
   visiting the pages via my mobile devices made the differences imperceptible**.
 - even a 1.2 second performance difference is negligble in the modern web. see below:
 
-![github-stats]({{ "/images/webframe/github.png" | absolute_url }})
-*i'm assuming github is mining bitcoin when it's visited*
+<figure>
+  <img src="{{site.url}}/images/webframe/github.png"/>
+  <figcaption>i'm assuming github is mining bitcoin when it's visited</figcaption>
+</figure>
