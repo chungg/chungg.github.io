@@ -115,9 +115,9 @@ I am treating the query to Yahoo as a query to a extremely distant/slow database
 ![flask-io-data]({{ "/images/webframe/flask-yahoo.png" | absolute_url }})
 *Flask io-heavy page performance*
 
-In this case, **the response of both Axum and Flask are comparable**. Looking at the code,
-the query to Yahoo is made synchronously. In theory, Axum should be able to queue more requests
-but any performance gains would be assuming the "database" has the capacity to handle load.
+In this case, **the response of both Axum and Flask are comparable**.
+In theory, Axum should be able to queue more requests but any performance gains would
+be assuming the "database" has the capacity to handle load.
 
 ### api
 
