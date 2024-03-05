@@ -272,14 +272,9 @@ fn ewma(data: &[f64], alpha: f64) -> Vec<f64> {
 fn ewma(data: &[f64], alpha: f64) -> Vec<f64> {
     // functional solution
     data.iter()
-        .scan(None, |state, &x| {
-            if *state == None {
-                *state = Some(x);
-                *state
-            } else {
-                *state = Some(x * alpha + state.unwrap() * (1.0 - alpha));
-                *state
-            }
+        .scan(data[0], |state, &x| {
+            *state = x * alpha + *state * (1.0 - alpha);
+            Some(*state)
         })
         .collect::<Vec<f64>>()
 }
@@ -364,3 +359,4 @@ alerts, then maybe it's worth the optimisation.
 ## revisions
 - 2024-01-16: add functional ewma solution for rust
 - 2024-01-20: benchmark properly on optimised code
+- 2024-03-05: simplify functional solution
