@@ -21,7 +21,8 @@ author's views may not reflect reality).
 This post aims to highlight differences in behaviour between algorithms and does not intend to
 suggest which algorithms are best. Depending on use case, a flatter, smoother result may be
 desirable and in other cases, the opposite. Additionally, the post is subjective and should be
-questioned as the author has no statistical background and has not been in school for many years.
+questioned as the author has no statistical background, has not been in school for many years,
+and continues to refute the solution to the Monty Hall problem.
 
 ## the basics
 
