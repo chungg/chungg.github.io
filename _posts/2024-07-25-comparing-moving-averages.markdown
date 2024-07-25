@@ -67,9 +67,9 @@ Average [(TRIMA)](https://docs.rs/traquer/latest/traquer/smooth/fn.trima.html) d
 
 - EWMA - responsive but tends to lag when momentum increases
 - Wilder - this technically produces the same results as EWMA but since the same window size is used
--          in this case, lags more
+           in this case, lags more
 - TRIMA - smoother but less responsive than SMA which it is based off of. similar to EWMA but
--         does not flatten significant data as much
+          does not flatten significant data as much
 - DEMA - more responsive than EWMA with slightly more noise
 - TEMA - similar responsiveness as DEMA but captures even more noise
 
@@ -164,8 +164,7 @@ captures how closes it matches direction changes and R-squared
 R-squared value over 50 datapoint windows.
 
 A higher MDA/RSQ and lower MAE/RMSE does not necessarily suggest a better line. It most
-likely implies the line contains more noise. Also, keep in mind, these numbers will
-change based on changes to input parameters.
+likely implies the line contains more noise.
 
 | **ALGO**   | **MAE** | **RMSE** | **MDA** | **RSQ** | **RUNTIME (us)** |
 | ---------- | ------- | -------- | ------- | ------- | ---------------- |
