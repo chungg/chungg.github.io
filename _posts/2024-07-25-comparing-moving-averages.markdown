@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "No place to be ending but somewhere to start"
+title:  "no place to be ending but somewhere to start"
 date:   2024-07-25 00:00:00 -0500
 tags: statistics rust moving-averages traquer regression
 ---
